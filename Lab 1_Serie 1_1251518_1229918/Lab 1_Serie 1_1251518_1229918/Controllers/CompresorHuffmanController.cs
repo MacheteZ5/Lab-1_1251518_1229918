@@ -4,17 +4,18 @@ using System.IO;
 using System.Linq;
 using System.Web;
 using System.Web.Mvc;
+using System.Web.Routing;
 using Lab_1_Serie_1_1251518_1229918.Models;
 namespace Lab_1_Serie_1_1251518_1229918.Controllers
 {
     public class CompresorHuffmanController : Controller
     {
-        static string texto = "";
         //lectura del archivo
         [HttpPost]
         //el siguiente ActionResult permite guardar el texto del archivo en un string 
         public ActionResult Index(HttpPostedFileBase postedFile)
         {
+            string textoArchivo = "";
             string ArchivoLeido = string.Empty;
             //el siguiente if permite seleccionar un archivo en específico
             if (postedFile != null)
@@ -27,13 +28,12 @@ namespace Lab_1_Serie_1_1251518_1229918.Controllers
                 //se toma la ruta y nombre del archivo
                 ArchivoLeido = ruta + Path.GetFileName(postedFile.FileName);
                 // se añade la extensión del archivo
-                string extension = Path.GetExtension(postedFile.FileName);
+                //string extension = Path.GetExtension(postedFile.FileName);
                 postedFile.SaveAs(ArchivoLeido);
                 //se lee el archivo con texto que se desa comprimir
-                string textoArchivo = System.IO.File.ReadAllText(ArchivoLeido);
-                texto = textoArchivo;
+                textoArchivo = System.IO.File.ReadAllText(ArchivoLeido);
             }
-            return RedirectToAction("SeparaciónDelTexto");
+            return RedirectToAction("SeparaciónDelTexto", new RouteValueDictionary(new { Controller = "CompresorHuffman", Action = "index", Texto = textoArchivo }));
         }
         public ActionResult Index()
         {
@@ -43,12 +43,28 @@ namespace Lab_1_Serie_1_1251518_1229918.Controllers
         static Dictionary<char, object> TablaCaracteres = new Dictionary<char, object>();
         //Al momento de haber recibido el string del texto, habrá que separar caracter por caracter
         static int CantidadRepetidos = 0;
-        public ActionResult SeparaciónDelTexto()
+        //retorna los valores que contiene la lista
+        private static T GetAnyValue<T>(char strKey)
         {
-            //texto = "Breath, should I take a deep Faith, should I take the leap Taste, what a bittersweet All my, all my life Let me face, let me face, let me face my fears Oh, let me face, let me face, let me face my fears Won't be long, won't be long, I'm almost here Watch me cry all my tears Lose, soon have nothing to Space, this is what I choose A mile, could you walk in my shoes All your, all your life Let me face, let me face, let me face my fears Oh, let me face, let me face, let me face my fears Won't be long, won't be long, I'm almost here Watch me cry all my tears Watch me cry all my tears Let me face, let me face, let me face my fears Oh, let me face, let me face, let me face my fears Oh, I'll be lying with you, love, I'm almost here Watch me cry all my tears";
+            object obj;
+            T retType;
+
+            TablaCaracteres.TryGetValue(strKey, out obj);
+            try
+            {
+                retType = (T)obj;
+            }
+            catch
+            {
+                retType = default(T);
+            }
+            return retType;
+        }
+        public ActionResult SeparaciónDelTexto(string Texto)
+        {
             //se separará la cantidad de characteres de todo el texto
             int caracterestotales = 0;
-            foreach (char letra in texto)
+            foreach (char letra in Texto)
             {
                 if (TablaCaracteres.Count == 0)
                 {
@@ -72,7 +88,6 @@ namespace Lab_1_Serie_1_1251518_1229918.Controllers
                 }
                 caracterestotales++;
             }
-
             //se ordenará por orden ascendente la lista
             var sorted = from entrada in TablaCaracteres orderby entrada.Value ascending select entrada;
             TablaCaracteres = new Dictionary<char, object>();
@@ -86,40 +101,22 @@ namespace Lab_1_Serie_1_1251518_1229918.Controllers
                 elemento.frecuencia = Convert.ToInt32(caracter.Value);
                 lista.Add(elemento);
             }
-            return RedirectToAction("Arbol");
-        }
-        //retorna los valores que contiene la lista
-        private static T GetAnyValue<T>(char strKey)
-        {
-            object obj;
-            T retType;
 
-            TablaCaracteres.TryGetValue(strKey, out obj);
-            try
-            {
-                retType = (T)obj;
-            }
-            catch
-            {
-                retType = default(T);
-            }
-            return retType;
-        }
-
-        //lista para introducir las llaves
-        static List<Elementos_De_La_Lista> lista = new List<Elementos_De_La_Lista>();
-        static List<char> ListAux = new List<char>();
-        public ActionResult Arbol()
-        {
             //introducir todos los caracteres con sus respectivas probabilidades a la lista y sus cantidades
-            foreach(Elementos_De_La_Lista elem in lista)
-            { 
+            foreach (Elementos_De_La_Lista elem in lista)
+            {
                 elem.caracter = Convert.ToChar(TablaCaracteres.Keys.First());
                 elem.probabilidad = Convert.ToDouble(TablaCaracteres.Values.First());
                 ListAux.Add(elem.caracter);
                 TablaCaracteres.Remove(elem.caracter);
             }
-            
+            return RedirectToAction("Arbol");
+        }
+        //lista para introducir las llaves
+        static List<Elementos_De_La_Lista> lista = new List<Elementos_De_La_Lista>();
+        static List<char> ListAux = new List<char>();
+        public ActionResult Arbol()
+        {
             for(int i = 0; i < CantidadRepetidos+1; i++)
             {
                 if (lista.Count < 2)
