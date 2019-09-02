@@ -33,30 +33,29 @@ namespace Lab_1_Serie_1_1251518_1229918.Models
             WriteReportFile.Close();
 
         }
-        public Dictionary<char,string> códigosPrefíjo(NodoArbol raíz, List<char> dic, Dictionary<char, string> diccionario, string códigoprefíjo)
+        public void códigosPrefíjo(NodoArbol raíz, List<char> dic, string códigoprefíjo)
         {
             if (raíz == null)
             {
-                return diccionario;
+                return;
             }
             else
             {
-                diccionario = códigosPrefíjo(raíz.hijoIzquierdo, dic, diccionario, códigoprefíjo+0);
+                códigosPrefíjo(raíz.hijoIzquierdo, dic, códigoprefíjo+0);
                 if (raíz.hijoDerecho == null && raíz.hijoIzquierdo == null)
                 {
                     foreach (char c in dic)
                     {
                         if (c == (Convert.ToChar(raíz.caracter)))
                         {
-                            diccionario.Add(Convert.ToChar(raíz.caracter), códigoprefíjo);
                             //se envian los valores y llaves del diccionario a un metodo que permite la escritura en los archvios generados
                             generarArchivoDiccionario(raíz.caracter, códigoprefíjo);
                         }
                     }
                 }
-                diccionario = códigosPrefíjo(raíz.hijoDerecho, dic, diccionario, códigoprefíjo+1);
+                códigosPrefíjo(raíz.hijoDerecho, dic, códigoprefíjo+1);
             }
-            return diccionario;
+            return;
         }
     }
 }
