@@ -26,11 +26,19 @@ namespace Lab_1_Serie_1_1251518_1229918.Models
         //Método para escribir el caracter  su codigo prefijo en un archivo .huff
         public void generarArchivoDiccionario(string caracter, string prefijo)
         {
-            string tablaCaracterPrefijo = caracter + "|" + prefijo;
-            //se escribe en el archivo linea por linea el diccionario
-            StreamWriter WriteReportFile = File.AppendText(AppDomain.CurrentDomain.BaseDirectory + "Archivos\\Actual.huff");
-            WriteReportFile.WriteLine(tablaCaracterPrefijo);
-            WriteReportFile.Close();
+            var tablaCaracterPrefijo = "";
+
+
+            using (var writeStream = new FileStream("C:\\Users\\Usuario\\Desktop\\machete.huff", FileMode.Open))
+            {
+                using (var writer = new StreamWriter(writeStream))
+                {
+                    tablaCaracterPrefijo = $"{caracter} | {prefijo}";
+
+
+                    writer.Write(tablaCaracterPrefijo);
+                }
+            }
 
         }
         public Dictionary<char,string> códigosPrefíjo(NodoArbol raíz, List<char> dic, Dictionary<char, string> diccionario, string códigoprefíjo)
