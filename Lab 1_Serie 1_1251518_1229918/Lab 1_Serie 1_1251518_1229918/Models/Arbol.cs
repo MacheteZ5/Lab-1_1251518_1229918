@@ -33,29 +33,43 @@ namespace Lab_1_Serie_1_1251518_1229918.Models
             WriteReportFile.Close();
 
         }
-        public void códigosPrefíjo(NodoArbol raíz, List<char> dic, string códigoprefíjo)
+        public Dictionary<char, CantidadChar> códigosPrefíjo(NodoArbol raíz, Dictionary<char, CantidadChar>dic, string códigoprefíjo)
         {
             if (raíz == null)
             {
-                return;
+                return dic;
             }
             else
             {
-                códigosPrefíjo(raíz.hijoIzquierdo, dic, códigoprefíjo+0);
+                dic = códigosPrefíjo(raíz.hijoIzquierdo, dic, códigoprefíjo+0);
                 if (raíz.hijoDerecho == null && raíz.hijoIzquierdo == null)
                 {
-                    foreach (char c in dic)
+                    if (dic.ContainsKey(Convert.ToChar(raíz.caracter)))
                     {
-                        if (c == (Convert.ToChar(raíz.caracter)))
-                        {
-                            //se envian los valores y llaves del diccionario a un metodo que permite la escritura en los archvios generados
-                            generarArchivoDiccionario(raíz.caracter, códigoprefíjo);
-                        }
+                        CantidadChar cantidad = new CantidadChar();
+                        cantidad.codPref = códigoprefíjo;
+                        //se envian los valores y llaves del diccionario a un metodo que permite la escritura en los archvios generados
+                        dic.Remove(Convert.ToChar(raíz.caracter));
+                        dic.Add(Convert.ToChar(raíz.caracter), cantidad);
+                       //generarArchivoDiccionario(raíz.caracter, códigoprefíjo);
+                        //generarArchivoASCII(códigoprefíjo);
                     }
                 }
-                códigosPrefíjo(raíz.hijoDerecho, dic, códigoprefíjo+1);
+                dic = códigosPrefíjo(raíz.hijoDerecho, dic, códigoprefíjo+1);
             }
-            return;
+            return dic;
+        }
+        public void generarArchivoASCII(string prefíjo)
+        {
+            Byte DECABYTE;
+            char DECAASCII;
+            var pref = prefíjo;
+            decimal x = Convert.ToInt32(pref,2);
+            DECABYTE = Convert.ToByte(x);
+            DECAASCII = Convert.ToChar(DECABYTE);
+
+            
+            
         }
     }
 }

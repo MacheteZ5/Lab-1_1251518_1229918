@@ -11,7 +11,7 @@ namespace Lab_1_Serie_1_1251518_1229918.Controllers
     public class CompresorHuffmanController : Controller
     {
         //diccionario donde se guardarán las variables como llaves y sus cantidades de aparición como los valores
-        static Dictionary<char, object> diccionario = new Dictionary<char, object>();
+        static Dictionary<char, CantidadChar> diccionario = new Dictionary<char, CantidadChar>();
         const int bufferLengt = 500;
         //lectura del archivo
         [HttpPost]
@@ -33,22 +33,25 @@ namespace Lab_1_Serie_1_1251518_1229918.Controllers
                                 byteBuffer = reader.ReadBytes(bufferLengt);
                                 foreach(byte bit in byteBuffer)
                                 {
+                                    CantidadChar cantidad = new CantidadChar();
                                     if (diccionario.Count == 0)
                                     {
-                                        diccionario.Add((char)bit, 1);
+                                        cantidad.cantidad = 1;
+                                        diccionario.Add((char)bit, cantidad);
                                     }
                                     else
                                     {
                                         if (diccionario.ContainsKey((char)bit))
                                         {
-                                            int numero = GetAnyValue<int>(bit, diccionario);
+                                            CantidadChar numero = GetAnyValue<int>(bit, diccionario);
                                             diccionario.Remove((char)bit);
-                                            numero++;
-                                            diccionario.Add((char)bit, numero);
+                                            cantidad.cantidad = numero.cantidad + 1;
+                                            diccionario.Add((char)bit, cantidad);
                                         }
                                         else
                                         {
-                                            diccionario.Add((char)bit, 1);
+                                            cantidad.cantidad = 1;
+                                            diccionario.Add((char)bit, cantidad);
                                         }
                                     }
                                     caracterestotales++;
@@ -60,19 +63,18 @@ namespace Lab_1_Serie_1_1251518_1229918.Controllers
             }
            return RedirectToAction("SeparaciónDelTexto");
         }
-        private static T GetAnyValue<T>(byte strKey, Dictionary<char, object> diccionario)
+        private static CantidadChar GetAnyValue<T>(byte Key, Dictionary<char, CantidadChar> diccionario)
         {
-            object obj;
-            T retType;
-
-            diccionario.TryGetValue((char)strKey, out obj);
+            CantidadChar obj;
+            CantidadChar retType;
+            diccionario.TryGetValue((char)Key, out obj);
             try
             {
-                retType = (T)obj;
+                retType = (CantidadChar)obj;
             }
             catch
             {
-                retType = default(T);
+                retType = default(CantidadChar);
             }
             return retType;
         }
@@ -93,7 +95,7 @@ namespace Lab_1_Serie_1_1251518_1229918.Controllers
             foreach (var caracter in sorted)
             {
                 Elementos_De_La_Lista elemento = new Elementos_De_La_Lista();
-                double aux = (Convert.ToDouble(caracter.Value));
+                double aux = (Convert.ToDouble(caracter.Value.cantidad));
                 elemento.caracter = caracter.Key;
                 elemento.probabilidad =Convert.ToDouble((aux/caracterestotales));
                 lista.Add(elemento);
@@ -101,15 +103,12 @@ namespace Lab_1_Serie_1_1251518_1229918.Controllers
             lista.Sort();
             return RedirectToAction("Arbol");
         }
-        //lista para introducir las llaves
-        static List<char> ListAux = new List<char>();
         public ActionResult Arbol()
         {
             //creación del árbol
             Arbol Arbol = new Arbol();
-            //NodoArbol árbol = new NodoArbol();
             int Repeticiones = lista.Count();
-            for (int i = 0; i < Repeticiones + 1; i++)
+            for (int i = 0; i < Repeticiones; i++)
             {
                 if (lista.Count < 2)
                 {
@@ -160,21 +159,42 @@ namespace Lab_1_Serie_1_1251518_1229918.Controllers
                             }
                         }
                     }
-                    for (int j = 0; j < 2; j++)
-                    {
-                        lista.Remove(lista[0]);
-                    }
+                    lista.Remove(lista[0]);
+                    lista[0] = null;
                     Aux = Auxiliar.ingresar(izquierdo, derecho, nombre);
                     Elementos_De_La_Lista elemento = new Elementos_De_La_Lista();
                     elemento.Aux = Aux;
                     elemento.probabilidad = Aux.probabilidad;
-                    lista.Add(elemento);
-                    lista.Sort();
+                    if (lista.Count() > 1)
+                    {
+                        for (int j = 1; j < lista.Count(); j++)
+                        {
+                            if (lista[j].probabilidad > elemento.probabilidad)
+                            {
+                                lista[j - 1] = elemento;
+                                break;
+                            }
+                            else
+                            {
+                                lista[j - 1] = lista[j];
+                                lista[j] = null;
+                                if (lista[lista.Count() - 1] == null)
+                                {
+                                    lista[lista.Count() - 1] = elemento;
+                                }
+                            }
+                        }
+                    }
+                    else
+                    {
+                        lista[0] = elemento;
+                    }
                 }
             }
+            byte[] buffer = new byte[bufferLengt];
             Arbol.raíz= lista[0].Aux;
             string prefíjo = "";
-            Arbol.códigosPrefíjo(Arbol.raíz, ListAux, prefíjo);
+            diccionario = Arbol.códigosPrefíjo(Arbol.raíz, diccionario, prefíjo);
             return View();
         }
     }
