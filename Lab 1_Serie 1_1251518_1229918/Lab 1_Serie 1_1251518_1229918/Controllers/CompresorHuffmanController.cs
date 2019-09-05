@@ -12,58 +12,52 @@ namespace Lab_1_Serie_1_1251518_1229918.Controllers
     {
         //diccionario donde se guardarán las variables como llaves y sus cantidades de aparición como los valores
         static Dictionary<char, CantidadChar> diccionario = new Dictionary<char, CantidadChar>();
-        const int bufferLengt = 500;
+        const int bufferLengt = 1000;
         //lectura del archivo
         [HttpPost]
         //el siguiente ActionResult permite guardar el texto del archivo en un string 
         public ActionResult Index(HttpPostedFileBase postedFile)
         {
-            using (var stream = new FileStream("C:\\Users\\mache\\Documents\\Segundo año\\Lab-1_1251518_1229918\\Archivos\\Actual.huff", FileMode.Open))
+            using (var stream = new FileStream("C:\\Users\\mache\\Documents\\Segundo año\\Lab-1_1251518_1229918\\Lab 1_Serie 1_1251518_1229918\\Lab 1_Serie 1_1251518_1229918\\Archivos\\ArchivoPrueba.huff", FileMode.Open))
             {
                 //te va a devolver un numero cualquiera
                 using (var reader = new BinaryReader(stream))
                 {
-                    using (var writeStrime = new FileStream("C:\\Users\\mache\\Documents\\Segundo año\\Lab-1_1251518_1229918\\Archivos\\Actual2.huff", FileMode.Append))
+                    var byteBuffer = new byte[bufferLengt];
+                    while (reader.BaseStream.Position != reader.BaseStream.Length)
                     {
-                        using (var writer = new BinaryWriter(writeStrime))
+                        byteBuffer = reader.ReadBytes(bufferLengt);
+                        foreach (byte bit in byteBuffer)
                         {
-                            var byteBuffer = new byte[bufferLengt];
-                            while (reader.BaseStream.Position != reader.BaseStream.Length)
+                            CantidadChar cantidad = new CantidadChar();
+                            if (diccionario.Count == 0)
                             {
-                                byteBuffer = reader.ReadBytes(bufferLengt);
-                                foreach(byte bit in byteBuffer)
+                                cantidad.cantidad = 1;
+                                diccionario.Add((char)bit, cantidad);
+                            }
+                            else
+                            {
+                                if (diccionario.ContainsKey((char)bit))
                                 {
-                                    CantidadChar cantidad = new CantidadChar();
-                                    if (diccionario.Count == 0)
-                                    {
-                                        cantidad.cantidad = 1;
-                                        diccionario.Add((char)bit, cantidad);
-                                    }
-                                    else
-                                    {
-                                        if (diccionario.ContainsKey((char)bit))
-                                        {
-                                            CantidadChar numero = GetAnyValue<int>(bit, diccionario);
-                                            diccionario.Remove((char)bit);
-                                            cantidad.cantidad = numero.cantidad + 1;
-                                            diccionario.Add((char)bit, cantidad);
-                                        }
-                                        else
-                                        {
-                                            cantidad.cantidad = 1;
-                                            diccionario.Add((char)bit, cantidad);
-                                        }
-                                    }
-                                    caracterestotales++;
+                                    CantidadChar numero = GetAnyValue<int>(bit);
+                                    diccionario.Remove((char)bit);
+                                    cantidad.cantidad = numero.cantidad + 1;
+                                    diccionario.Add((char)bit, cantidad);
+                                }
+                                else
+                                {
+                                    cantidad.cantidad = 1;
+                                    diccionario.Add((char)bit, cantidad);
                                 }
                             }
+                            caracterestotales++;
                         }
                     }
                 }
             }
            return RedirectToAction("SeparaciónDelTexto");
         }
-        private static CantidadChar GetAnyValue<T>(byte Key, Dictionary<char, CantidadChar> diccionario)
+        private static CantidadChar GetAnyValue<T>(byte Key)
         {
             CantidadChar obj;
             CantidadChar retType;
@@ -195,6 +189,72 @@ namespace Lab_1_Serie_1_1251518_1229918.Controllers
             Arbol.raíz= lista[0].Aux;
             string prefíjo = "";
             diccionario = Arbol.códigosPrefíjo(Arbol.raíz, diccionario, prefíjo);
+
+            foreach(var i in diccionario.Keys)
+            {
+                CantidadChar prefijo = GetAnyValue<int>(Convert.ToByte(i));
+                Arbol.generarArchivoDiccionario((char)i,prefijo.codPref);
+            }
+            return View();
+        }
+
+
+        //Método de descompresión
+        //Lectura del archivo e introducir los códigos prefijos con sus respectivos caracteres al diccionario 
+        [HttpPost]
+        public ActionResult LecturaDescompresión(HttpPostedFileBase postedFile)
+        {
+            diccionario = new Dictionary<char, CantidadChar>();
+            using (var stream = new FileStream("C:\\Users\\mache\\Documents\\Segundo año\\Lab-1_1251518_1229918\\Lab 1_Serie 1_1251518_1229918\\Lab 1_Serie 1_1251518_1229918\\Archivos\\Actual.huff", FileMode.Open))
+            {
+                //te va a devolver un numero cualquiera
+                using (var reader = new BinaryReader(stream))
+                {
+                    var byteBuffer = new byte[bufferLengt];
+                    while (reader.BaseStream.Position != reader.BaseStream.Length)
+                    {
+                        byteBuffer = reader.ReadBytes(bufferLengt);
+                        char caracter = ' ';
+                        CantidadChar prefijo = new CantidadChar();
+                        bool verdad = false;
+                        for (int i = 0; i < byteBuffer.Count()+1; i++)
+                        {
+                            if (verdad == false)
+                            {
+                                if (byteBuffer[i + 1] == 124)
+                                {
+                                    caracter = (char)byteBuffer[i];
+                                    verdad = true;
+                                    i++;
+                                }
+                            }
+                            else
+                            {
+                                if (i == byteBuffer.Count())
+                                {
+                                    diccionario.Add(caracter, prefijo);
+                                    verdad = false;
+                                    break;
+                                }
+                                if (byteBuffer[i] != 13)
+                                {
+                                    prefijo.codPref = prefijo.codPref + (char)byteBuffer[i];
+                                }
+                                else
+                                {
+                                    diccionario.Add(caracter, prefijo);
+                                    verdad = false;
+                                    prefijo = new CantidadChar();
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+            return View();
+        }
+        public ActionResult LecturaDescompresión()
+        {
             return View();
         }
     }

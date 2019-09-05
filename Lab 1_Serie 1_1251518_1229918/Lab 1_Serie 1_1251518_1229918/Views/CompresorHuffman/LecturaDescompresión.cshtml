@@ -1,0 +1,63 @@
+﻿<!DOCTYPE html>
+<html>
+<style>
+    #archivo {
+        background-color: #003366;
+        border: none;
+        color: white;
+        padding: 8px 16px;
+        text-decoration: none;
+        margin: 4px 2px;
+        cursor: pointer;
+        text-align: center;
+        font-weight: bold;
+    }
+
+    h1 {
+        color: white;
+        font-weight: bold;
+    }
+
+    #comprimir {
+        background-color: #663300;
+        border: none;
+        color: white;
+        padding: 8px 16px;
+        text-decoration: none;
+        margin: 4px 2px;
+        cursor: pointer;
+        text-align: center;
+        font-weight: bold;
+    }
+
+    #carga {
+        position: fixed;
+        top: 50%;
+        left: 50%;
+        width: 30em;
+        height: 18em;
+        margin-top: -9em;
+        margin-left: -15em;
+    }
+</style>
+
+<body>
+    <div id="titulo">
+        <center>
+            <h1>Por favor, seleccione el archivo que desea comprimir.</h1>
+        </center>
+    </div>
+    <div id="carga">
+        <center>
+            @using (Html.BeginForm("LecturaDescompresión", "CompresorHuffman", FormMethod.Post, new { enctype = "multipart/form-data" }))
+            {
+                <input id="archivo" type="file" name="postedFile" />
+                <input id="archivo" type="submit" value="Cargar Archivo" />
+            }
+            <form action="LecturaDescompresión" method="post">
+                <input id="comprimir" type="submit" name="enviar" value="Comprimir" />
+            </form>
+        </center>
+    </div>
+</body>
+</html>s
