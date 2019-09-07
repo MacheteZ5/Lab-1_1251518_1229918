@@ -15,6 +15,7 @@ namespace Lab_1_Serie_1_1251518_1229918.Models
         {
             raíz = null;
         }
+        int cantidadNodos = 0;
         public NodoArbol ingresar(NodoArbol izquierdo, NodoArbol derecho, string nombre)
         {
             raíz = new NodoArbol();
@@ -23,26 +24,45 @@ namespace Lab_1_Serie_1_1251518_1229918.Models
             raíz.caracter = nombre;
             raíz.probabilidad = derecho.probabilidad + izquierdo.probabilidad;
             return raíz;
+
         }
         //Método para escribir el caracter  su codigo prefijo en un archivo .huff
-        const int tamañoBuffer = 128;
+        const int tamañoBuffer = 256;
         int espaciosUtilizados = 0;
         byte[] buffer = new byte[tamañoBuffer];
-
+        int cantCaracteres = 0;
         public void generarArchivoDiccionario(string caracter, string prefijo)
         {
+            cantCaracteres++;
             string linea = $"{caracter}|{prefijo}";
-            while (buffer.Length >= espaciosUtilizados)
+            while (buffer.Length >= espaciosUtilizados && espaciosUtilizados !=tamañoBuffer)
             {
-                for (int i = 0; i < linea.Length; i++)
+                if(tamañoBuffer - espaciosUtilizados > linea.Length)
                 {
-                    buffer[espaciosUtilizados] = Convert.ToByte(linea[i]);
-                    espaciosUtilizados++;
-               
+                    for (int i = 0; i < linea.Length; i++)
+                    {
+                        buffer[espaciosUtilizados] = Convert.ToByte(linea[i]);
+                        espaciosUtilizados++;
+
+                    }
+                    break;
                 }
                 break;
             }
-            
+
+            if(cantCaracteres == cantidadNodos || cantCaracteres == tamañoBuffer || tamañoBuffer - espaciosUtilizados < linea.Length)
+            {
+                
+                using (var writeStream = new FileStream("C:\\Users\\Usuario\\Desktop\\nuevaprueba.huff", FileMode.OpenOrCreate))
+                {
+                    using (var writer = new BinaryWriter(writeStream))
+                    {                       
+                            writer.Write(buffer);
+                        
+                    }
+                }
+
+            }
             //using (var writeStream = new FileStream("C:\\Users\\Usuario\\Desktop\\machete.huff", FileMode.Open))
             //{
             //    using (var writer = new StreamWriter(writeStream))
@@ -53,6 +73,7 @@ namespace Lab_1_Serie_1_1251518_1229918.Models
 
 
         }
+        
         public Dictionary<char,string> códigosPrefíjo(NodoArbol raíz, List<char> dic, Dictionary<char, string> diccionario, string códigoprefíjo)
         {
             if (raíz == null)
@@ -70,6 +91,7 @@ namespace Lab_1_Serie_1_1251518_1229918.Models
                         {
                             diccionario.Add(Convert.ToChar(raíz.caracter), códigoprefíjo);
                             //se envian los valores y llaves del diccionario a un metodo que permite la escritura en los archvios generados
+                            cantidadNodos++;
                             generarArchivoDiccionario(raíz.caracter, códigoprefíjo);
                         }
                     }

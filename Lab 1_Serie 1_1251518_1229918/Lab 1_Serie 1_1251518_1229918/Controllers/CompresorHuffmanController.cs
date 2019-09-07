@@ -45,7 +45,6 @@ namespace Lab_1_Serie_1_1251518_1229918.Controllers
         static int CantidadRepetidos = 0;
         public ActionResult SeparaciónDelTexto()
         {
-            //texto = "Breath, should I take a deep Faith, should I take the leap Taste, what a bittersweet All my, all my life Let me face, let me face, let me face my fears Oh, let me face, let me face, let me face my fears Won't be long, won't be long, I'm almost here Watch me cry all my tears Lose, soon have nothing to Space, this is what I choose A mile, could you walk in my shoes All your, all your life Let me face, let me face, let me face my fears Oh, let me face, let me face, let me face my fears Won't be long, won't be long, I'm almost here Watch me cry all my tears Watch me cry all my tears Let me face, let me face, let me face my fears Oh, let me face, let me face, let me face my fears Oh, I'll be lying with you, love, I'm almost here Watch me cry all my tears";
             //se separará la cantidad de characteres de todo el texto
             int caracterestotales = 0;
             foreach (char letra in texto)
