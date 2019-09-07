@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Web;
 using System.IO;
+using System.Text;
 
 namespace Lab_1_Serie_1_1251518_1229918.Models
 {
@@ -24,21 +25,32 @@ namespace Lab_1_Serie_1_1251518_1229918.Models
             return raíz;
         }
         //Método para escribir el caracter  su codigo prefijo en un archivo .huff
+        const int tamañoBuffer = 128;
+        int espaciosUtilizados = 0;
+        byte[] buffer = new byte[tamañoBuffer];
+
         public void generarArchivoDiccionario(string caracter, string prefijo)
         {
-            var tablaCaracterPrefijo = "";
-
-
-            using (var writeStream = new FileStream("C:\\Users\\Usuario\\Desktop\\machete.huff", FileMode.Open))
+            string linea = $"{caracter}|{prefijo}";
+            while (buffer.Length >= espaciosUtilizados)
             {
-                using (var writer = new StreamWriter(writeStream))
+                for (int i = 0; i < linea.Length; i++)
                 {
-                    tablaCaracterPrefijo = $"{caracter} | {prefijo}";
-
-
-                    writer.Write(tablaCaracterPrefijo);
+                    buffer[espaciosUtilizados] = Convert.ToByte(linea[i]);
+                    espaciosUtilizados++;
+               
                 }
+                break;
             }
+            
+            //using (var writeStream = new FileStream("C:\\Users\\Usuario\\Desktop\\machete.huff", FileMode.Open))
+            //{
+            //    using (var writer = new StreamWriter(writeStream))
+            //    {
+            //        writer.Write($"{caracter}|{prefijo}");
+            //    }
+            //}
+
 
         }
         public Dictionary<char,string> códigosPrefíjo(NodoArbol raíz, List<char> dic, Dictionary<char, string> diccionario, string códigoprefíjo)
