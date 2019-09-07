@@ -12,6 +12,7 @@ namespace Lab_1_Serie_1_1251518_1229918.Controllers
     {
         //diccionario donde se guardarán las variables como llaves y sus cantidades de aparición como los valores
         static Dictionary<char, CantidadChar> diccionario = new Dictionary<char, CantidadChar>();
+        static List<byte> ListaByte = new List<byte>();
         const int bufferLengt = 1000;
         //lectura del archivo
         [HttpPost]
@@ -50,6 +51,7 @@ namespace Lab_1_Serie_1_1251518_1229918.Controllers
                                     diccionario.Add((char)bit, cantidad);
                                 }
                             }
+                            ListaByte.Add(bit);
                             caracterestotales++;
                         }
                     }
@@ -185,10 +187,32 @@ namespace Lab_1_Serie_1_1251518_1229918.Controllers
                     }
                 }
             }
-            byte[] buffer = new byte[bufferLengt];
             Arbol.raíz= lista[0].Aux;
             string prefíjo = "";
             diccionario = Arbol.códigosPrefíjo(Arbol.raíz, diccionario, prefíjo);
+            //separación de los caracteres para convertirlos a decimal y luego a ASCII
+            List<char> cadena = new List<char>();
+            foreach (byte bit in ListaByte)
+            {
+                if (diccionario.ContainsKey((char)bit))
+                {
+                    CantidadChar separación = new CantidadChar();
+                    separación = GetAnyValue<int>(bit);
+                    foreach (char caracter in separación.codPref)
+                    {
+                        cadena.Add(caracter);
+                    }
+                    if (cadena.Count() > 8)
+                    {
+                        string x = "";
+                        for(int i = 0; i < 8;i++)
+                        {
+                            x = x + cadena[0];
+                            cadena.Remove(cadena[0]);
+                        }
+                    }
+                }
+            }
             return View();
         }
 
