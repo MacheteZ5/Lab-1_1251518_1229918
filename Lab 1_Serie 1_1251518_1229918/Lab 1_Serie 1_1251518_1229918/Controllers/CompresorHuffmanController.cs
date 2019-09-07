@@ -18,7 +18,7 @@ namespace Lab_1_Serie_1_1251518_1229918.Controllers
         //el siguiente ActionResult permite guardar el texto del archivo en un string 
         public ActionResult Index(HttpPostedFileBase postedFile)
         {
-            using (var stream = new FileStream("C:\\Users\\mache\\Documents\\Segundo año\\Lab-1_1251518_1229918\\Lab 1_Serie 1_1251518_1229918\\Lab 1_Serie 1_1251518_1229918\\Archivos\\ArchivoPrueba.huff", FileMode.Open))
+            using (var stream = new FileStream("C:\\Users\\mache\\Documents\\BIBLIA COMPLETA.txt"/*KH 3.2.jpg*/, FileMode.Open))
             {
                 //te va a devolver un numero cualquiera
                 using (var reader = new BinaryReader(stream))
@@ -189,12 +189,6 @@ namespace Lab_1_Serie_1_1251518_1229918.Controllers
             Arbol.raíz= lista[0].Aux;
             string prefíjo = "";
             diccionario = Arbol.códigosPrefíjo(Arbol.raíz, diccionario, prefíjo);
-
-            foreach(var i in diccionario.Keys)
-            {
-                CantidadChar prefijo = GetAnyValue<int>(Convert.ToByte(i));
-                Arbol.generarArchivoDiccionario((char)i,prefijo.codPref);
-            }
             return View();
         }
 

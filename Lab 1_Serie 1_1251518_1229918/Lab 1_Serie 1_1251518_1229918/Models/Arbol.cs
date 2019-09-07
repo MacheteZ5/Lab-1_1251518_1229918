@@ -9,7 +9,7 @@ namespace Lab_1_Serie_1_1251518_1229918.Models
     public class Arbol
     {
         public NodoArbol raíz;
-
+        int cantidadNodos = 0;
         public Arbol()
         {
             raíz = null;
@@ -24,13 +24,40 @@ namespace Lab_1_Serie_1_1251518_1229918.Models
             return raíz;
         }
         //Método para escribir el caracter  su codigo prefijo en un archivo .huff
-        public void generarArchivoDiccionario(char caracter, string prefijo)
+        const int tamañoBuffer = 10000;
+        int espaciosUtilizados = 0;
+        byte[] buffer = new byte[tamañoBuffer];
+        int cantCaracteres = 0;
+        public void generarArchivoDiccionario(string caracter, string prefijo)
         {
-            string tablaCaracterPrefijo = caracter + "|" + prefijo;
-            //se escribe en el archivo linea por linea el diccionario
-            StreamWriter WriteReportFile = File.AppendText(AppDomain.CurrentDomain.BaseDirectory+"Archivos\\Actual.huff");
-            WriteReportFile.WriteLine(tablaCaracterPrefijo);
-            WriteReportFile.Close();
+            cantCaracteres++;
+            string linea = $"{caracter}|{prefijo}";
+            while (buffer.Length >= espaciosUtilizados && espaciosUtilizados != tamañoBuffer)
+            {
+                if (tamañoBuffer - espaciosUtilizados > linea.Length)
+                {
+                    for (int i = 0; i < linea.Length; i++)
+                    {
+                        buffer[espaciosUtilizados] = Convert.ToByte(linea[i]);
+                        espaciosUtilizados++;
+
+                    }
+                    break;
+                }
+                break;
+            }
+
+            if (cantCaracteres == cantidadNodos || cantCaracteres == tamañoBuffer || tamañoBuffer - espaciosUtilizados < linea.Length)
+            {
+                using (var writeStream = new FileStream("C:\\Users\\mache\\Desktop\\nuevaprueba.huff", FileMode.Append))
+                {
+                    //public virtual long Seek(int offset, System.IO.SeekOrigin origin);
+                    using (var writer = new BinaryWriter(writeStream))
+                    {
+                        writer.Write(buffer);
+                    }
+                }
+            }
         }
         public Dictionary<char, CantidadChar> códigosPrefíjo(NodoArbol raíz, Dictionary<char, CantidadChar>dic, string códigoprefíjo)
         {
@@ -50,6 +77,8 @@ namespace Lab_1_Serie_1_1251518_1229918.Models
                         //se envian los valores y llaves al diccionario para generar la tabla de prefíjos
                         dic.Remove(Convert.ToChar(raíz.caracter));
                         dic.Add(Convert.ToChar(raíz.caracter), cantidad);
+                        cantidadNodos++;
+                        generarArchivoDiccionario(raíz.caracter, códigoprefíjo);
                     }
                 }
                 dic = códigosPrefíjo(raíz.hijoDerecho, dic, códigoprefíjo+1);
