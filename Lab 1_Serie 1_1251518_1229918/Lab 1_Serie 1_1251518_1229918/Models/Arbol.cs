@@ -58,9 +58,12 @@ namespace Lab_1_Serie_1_1251518_1229918.Models
                     using (var writer = new BinaryWriter(writeStream))
                     {                       
                             writer.Write(buffer);
-                        
+                        //falta el appendtext para conservar buffers escritos
                     }
                 }
+                // se limpia el buffer
+                buffer = new byte[tamañoBuffer];
+                espaciosUtilizados = 0;
 
             }
             //using (var writeStream = new FileStream("C:\\Users\\Usuario\\Desktop\\machete.huff", FileMode.Open))
