@@ -14,6 +14,7 @@ namespace Lab_1_Serie_1_1251518_1229918.Controllers
         static Dictionary<char, CantidadChar> diccionario = new Dictionary<char, CantidadChar>();
         static List<byte> ListaByte = new List<byte>();
         const int bufferLengt = 1000;
+        const int bufferLengt2 = 500;
         //lectura del archivo
         [HttpPost]
         //el siguiente ActionResult permite guardar el texto del archivo en un string 
@@ -219,60 +220,138 @@ namespace Lab_1_Serie_1_1251518_1229918.Controllers
 
         //Método de descompresión
         //Lectura del archivo e introducir los códigos prefijos con sus respectivos caracteres al diccionario 
+        static List<byte> ASCII = new List<byte>();
         [HttpPost]
         public ActionResult LecturaDescompresión(HttpPostedFileBase postedFile)
         {
             diccionario = new Dictionary<char, CantidadChar>();
-            using (var stream = new FileStream("C:\\Users\\mache\\Documents\\Segundo año\\Lab-1_1251518_1229918\\Lab 1_Serie 1_1251518_1229918\\Lab 1_Serie 1_1251518_1229918\\Archivos\\Actual.huff", FileMode.Open))
+            
+            using (var stream = new FileStream(Convert.ToString(postedFile.FileName), FileMode.Open))
             {
                 //te va a devolver un numero cualquiera
                 using (var reader = new BinaryReader(stream))
                 {
+                    CantidadChar prefijo = new CantidadChar();
+                    char caracter = ' ';
                     var byteBuffer = new byte[bufferLengt];
+                    bool verdad = false;
+                    bool separación = false;
                     while (reader.BaseStream.Position != reader.BaseStream.Length)
                     {
-                        byteBuffer = reader.ReadBytes(bufferLengt);
-                        char caracter = ' ';
-                        CantidadChar prefijo = new CantidadChar();
-                        bool verdad = false;
-                        for (int i = 0; i < byteBuffer.Count()+1; i++)
+                        byteBuffer = reader.ReadBytes(bufferLengt2);
+                        
+                        for (int i = 0; i < byteBuffer.Count(); i++)
                         {
-                            if (verdad == false)
+                            if (byteBuffer[i] == 45)
                             {
-                                if (byteBuffer[i + 1] == 124)
+                                separación=true;
+                            }
+                            if (separación==false)
+                            {
+                                //Lectura de la tabla
+                                if (i < byteBuffer.Count())
                                 {
-                                    caracter = (char)byteBuffer[i];
-                                    verdad = true;
-                                    i++;
+                                    if (byteBuffer[i] == 49 || byteBuffer[i] == 48)
+                                    {
+                                        verdad = true;
+                                    }
+                                }
+                                if (verdad == false)
+                                {
+                                    if (i < byteBuffer.Count() - 1)
+                                    {
+                                        if (byteBuffer[i + 1] == 124)
+                                        {
+                                            caracter = (char)byteBuffer[i];
+                                            verdad = true;
+                                            i++;
+                                        }
+                                    }
+                                    if (i < byteBuffer.Count())
+                                    {
+                                        if (i > 0)
+                                        {
+                                            if (byteBuffer[i - 1] == 10)
+                                            {
+                                                caracter = (char)byteBuffer[i];
+                                                i++;
+                                            }
+                                        }
+                                    }
+                                }
+                                else
+                                {
+                                    if (i == byteBuffer.Count() && prefijo.codPref != null)
+                                    {
+                                        diccionario.Add(caracter, prefijo);
+                                        verdad = false;
+                                        break;
+                                    }
+                                    if ((byteBuffer[i] != 10) && (byteBuffer[i] != 13))
+                                    {
+                                        prefijo.codPref = prefijo.codPref + (char)byteBuffer[i];
+                                    }
+                                    else
+                                    {
+                                        diccionario.Add(caracter, prefijo);
+                                        verdad = false;
+                                        prefijo = new CantidadChar();
+                                        caracter = ' ';
+                                    }
                                 }
                             }
                             else
                             {
-                                if (i == byteBuffer.Count())
-                                {
-                                    diccionario.Add(caracter, prefijo);
-                                    verdad = false;
-                                    break;
-                                }
-                                if (byteBuffer[i] != 13)
-                                {
-                                    prefijo.codPref = prefijo.codPref + (char)byteBuffer[i];
-                                }
-                                else
-                                {
-                                    diccionario.Add(caracter, prefijo);
-                                    verdad = false;
-                                    prefijo = new CantidadChar();
-                                }
+                               ASCII.Add(byteBuffer[i]);
                             }
                         }
                     }
                 }
             }
-            return View();
+            for (int i = 0; i < 3; i++)
+            {
+                ASCII.Remove(ASCII[0]);
+            }
+            return RedirectToAction("GeneraciónDelArchivoOriginal");
         }
         public ActionResult LecturaDescompresión()
         {
+            return View();
+        }
+
+        public string Convertir(byte bit, string binario)
+        {
+            while (bit > 0)
+            {
+                binario = binario + (bit % 2);
+                bit = Convert.ToByte(Convert.ToInt32(bit / 2));
+            }
+            return binario;
+        }
+        public ActionResult GeneraciónDelArchivoOriginal()
+        {
+            string texto = "";
+            foreach (byte bit in ASCII)
+            {
+                string binario = "";
+                binario = Convertir(bit, binario);
+                string clave = "";
+                CantidadChar valor = new CantidadChar();
+                foreach(char c in binario)
+                {
+                    clave = clave + c;
+                    valor.codPref = clave;
+                    foreach(char Key in diccionario.Keys)
+                    {
+                        CantidadChar valor2 = GetAnyValue<CantidadChar>(Convert.ToByte(Key));
+                        if (valor.codPref == valor2.codPref)
+                        {
+                            texto = texto + Key;
+                            clave = "";
+                        }
+                    }
+                }
+            }
             return View();
         }
     }

@@ -85,17 +85,15 @@ namespace Lab_1_Serie_1_1251518_1229918.Models
             }
             return dic;
         }
-        public void generarArchivoASCII(string prefíjo)
-        {
-            Byte DECABYTE;
-            char DECAASCII;
-            var pref = prefíjo;
-            decimal x = Convert.ToInt32(pref,2);
-            DECABYTE = Convert.ToByte(x);
-            DECAASCII = Convert.ToChar(DECABYTE);
+        //public void generarArchivoASCII(string prefíjo)
+        //{
+        //    Byte DECABYTE;
+        //    char DECAASCII;
+        //    var pref = prefíjo;
+        //    decimal x = Convert.ToInt32(pref,2);
+        //    DECABYTE = Convert.ToByte(x);
+        //    DECAASCII = Convert.ToChar(DECABYTE);
 
-            
-            
-        }
+        //}
     }
 }
