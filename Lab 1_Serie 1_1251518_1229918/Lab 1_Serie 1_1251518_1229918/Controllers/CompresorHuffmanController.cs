@@ -193,6 +193,7 @@ namespace Lab_1_Serie_1_1251518_1229918.Controllers
             diccionario = Arbol.códigosPrefíjo(Arbol.raíz, diccionario, prefíjo);
             //separación de los caracteres para convertirlos a decimal y luego a ASCII
             List<char> cadena = new List<char>();
+            string x = "";
             foreach (byte bit in ListaByte)
             {
                 if (diccionario.ContainsKey((char)bit))
@@ -205,12 +206,16 @@ namespace Lab_1_Serie_1_1251518_1229918.Controllers
                     }
                     if (cadena.Count() > 8)
                     {
-                        string x = "";
+                        x = "";
                         for(int i = 0; i < 8;i++)
                         {
                             x = x + cadena[0];
                             cadena.Remove(cadena[0]);
                         }
+                        Byte DECABYTE;
+                        var pref = x;
+                        decimal Y = Convert.ToInt32(pref, 2);
+                        DECABYTE = Convert.ToByte(Y);
                     }
                 }
             }
@@ -244,7 +249,13 @@ namespace Lab_1_Serie_1_1251518_1229918.Controllers
                         {
                             if (byteBuffer[i] == 45)
                             {
-                                separación=true;
+                                if (byteBuffer[i + 1] == 13)
+                                {
+                                    if (byteBuffer[i - 1] == 10)
+                                    {
+                                        separación = true;
+                                    }
+                                }
                             }
                             if (separación==false)
                             {
@@ -323,7 +334,7 @@ namespace Lab_1_Serie_1_1251518_1229918.Controllers
         {
             while (bit > 0)
             {
-                binario = binario + (bit % 2);
+                binario = (bit % 2) + binario;
                 bit = Convert.ToByte(Convert.ToInt32(bit / 2));
             }
             return binario;
@@ -331,11 +342,11 @@ namespace Lab_1_Serie_1_1251518_1229918.Controllers
         public ActionResult GeneraciónDelArchivoOriginal()
         {
             string texto = "";
+            string clave = "";
             foreach (byte bit in ASCII)
             {
                 string binario = "";
                 binario = Convertir(bit, binario);
-                string clave = "";
                 CantidadChar valor = new CantidadChar();
                 foreach(char c in binario)
                 {

@@ -49,7 +49,7 @@ namespace Lab_1_Serie_1_1251518_1229918.Models
 
             if (cantCaracteres == cantidadNodos || cantCaracteres == tamañoBuffer || tamañoBuffer - espaciosUtilizados < linea.Length)
             {
-                using (var writeStream = new FileStream("C:\\Users\\mache\\Desktop\\nuevaprueba.huff", FileMode.Append))
+                using (var writeStream = new FileStream("C:\\Users\\mache\\Desktop\\nuevaprueba.huff", FileMode.OpenOrCreate))
                 {
                     //public virtual long Seek(int offset, System.IO.SeekOrigin origin);
                     using (var writer = new BinaryWriter(writeStream))
@@ -85,15 +85,6 @@ namespace Lab_1_Serie_1_1251518_1229918.Models
             }
             return dic;
         }
-        //public void generarArchivoASCII(string prefíjo)
-        //{
-        //    Byte DECABYTE;
-        //    char DECAASCII;
-        //    var pref = prefíjo;
-        //    decimal x = Convert.ToInt32(pref,2);
-        //    DECABYTE = Convert.ToByte(x);
-        //    DECAASCII = Convert.ToChar(DECABYTE);
-
-        //}
+        
     }
 }
