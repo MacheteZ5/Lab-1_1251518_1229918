@@ -4,12 +4,16 @@ using System.IO;
 using System.Linq;
 using System.Web;
 using System.Web.Mvc;
+using System.Web.Routing;
 using Lab_1_Serie_1_1251518_1229918.Models;
 namespace Lab_1_Serie_1_1251518_1229918.Controllers
 {
     public class CompresorHuffmanController : Controller
     {
-        static string texto = "";
+        //diccionario donde se guardarán las variables como llaves y sus cantidades de aparición como los valores
+        static Dictionary<char, CantidadChar> diccionario = new Dictionary<char, CantidadChar>();
+        static List<byte> ListaByte = new List<byte>();
+        const int bufferLengt = 1000;
         //lectura del archivo
         [HttpPost]
         //el siguiente ActionResult permite guardar el texto del archivo en un string 
@@ -30,169 +34,262 @@ namespace Lab_1_Serie_1_1251518_1229918.Controllers
                 string extension = Path.GetExtension(postedFile.FileName);
                 postedFile.SaveAs(ArchivoLeido);
                 //se lee el archivo con texto que se desa comprimir
-                string textoArchivo = System.IO.File.ReadAllText(ArchivoLeido);
-                texto = textoArchivo;
+                using (var stream = new FileStream(ArchivoLeido, FileMode.Open))
+                {
+                    //te va a devolver un numero cualquiera
+                    using (var reader = new BinaryReader(stream))
+                    {
+                        var byteBuffer = new byte[bufferLengt];
+                        while (reader.BaseStream.Position != reader.BaseStream.Length)
+                        {
+                            byteBuffer = reader.ReadBytes(bufferLengt);
+                            foreach (byte bit in byteBuffer)
+                            {
+                                CantidadChar cantidad = new CantidadChar();
+                                if (diccionario.Count == 0)
+                                {
+                                    cantidad.cantidad = 1;
+                                    diccionario.Add((char)bit, cantidad);
+                                }
+                                else
+                                {
+                                    if (diccionario.ContainsKey((char)bit))
+                                    {
+                                        CantidadChar numero = GetAnyValue<int>(bit);
+                                        diccionario.Remove((char)bit);
+                                        cantidad.cantidad = numero.cantidad + 1;
+                                        diccionario.Add((char)bit, cantidad);
+                                    }
+                                    else
+                                    {
+                                        cantidad.cantidad = 1;
+                                        diccionario.Add((char)bit, cantidad);
+                                    }
+                                }
+                                ListaByte.Add(bit);
+                                caracterestotales++;
+                            }
+                        }
+                    }
+                }
             }
             return RedirectToAction("SeparaciónDelTexto");
+
         }
-        public ActionResult Index()
-        {
-            return View();
-        }
-        //Diccionario donde se guardarán los caracteres por llaves y sus cantidades por sus valores
-        static Dictionary<char, object> TablaCaracteres = new Dictionary<char, object>();
-        //Al momento de haber recibido el string del texto, habrá que separar caracter por caracter
-        static int CantidadRepetidos = 0;
-        public ActionResult SeparaciónDelTexto()
-        {
-            //se separará la cantidad de characteres de todo el texto
-            int caracterestotales = 0;
-            foreach (char letra in texto)
+        private static CantidadChar GetAnyValue<T>(byte Key)
             {
-                if (TablaCaracteres.Count == 0)
+                CantidadChar obj;
+                CantidadChar retType;
+                diccionario.TryGetValue((char)Key, out obj);
+                try
                 {
-                    TablaCaracteres.Add(letra,1);
-                    CantidadRepetidos++;
+                    retType = (CantidadChar)obj;
                 }
-                else
+                catch
                 {
-                    if (TablaCaracteres.ContainsKey(letra))
+                    retType = default(CantidadChar);
+                }
+                return retType;
+            }
+            public ActionResult Index()
+            {
+                return View();
+            }
+            static List<Elementos_De_La_Lista> lista = new List<Elementos_De_La_Lista>();
+
+            //Al momento de haber recibido el string del texto, habrá que separar caracter por caracter
+            static int caracterestotales = 0;
+            //retorna los valores que contiene la lista
+            public ActionResult SeparaciónDelTexto()
+            {
+                //se ordenará por orden ascendente la lista
+                var sorted = from entrada in diccionario orderby entrada.Value ascending select entrada;
+                //se introducirán los porcentajes de los caracteres en la tabla
+                foreach (var caracter in sorted)
+                {
+                    Elementos_De_La_Lista elemento = new Elementos_De_La_Lista();
+                    double aux = (Convert.ToDouble(caracter.Value.cantidad));
+                    elemento.caracter = caracter.Key;
+                    elemento.probabilidad = Convert.ToDouble((aux / caracterestotales));
+                    lista.Add(elemento);
+                }
+                lista.Sort();
+                return RedirectToAction("Arbol");
+            }
+            public ActionResult Arbol()
+            {
+                //creación del árbol
+                Arbol Arbol = new Arbol();
+                int Repeticiones = lista.Count();
+                for (int i = 0; i < Repeticiones; i++)
+                {
+                    if (lista.Count < 2)
                     {
-                        int numero=GetAnyValue<int>(letra);
-                        TablaCaracteres.Remove(letra);
-                        numero++;
-                        TablaCaracteres.Add(letra,numero);
+                        break;
                     }
                     else
                     {
-                        TablaCaracteres.Add(letra, 1);
-                        CantidadRepetidos++;
-                    }
-                }
-                caracterestotales++;
-            }
-
-            //se ordenará por orden ascendente la lista
-            var sorted = from entrada in TablaCaracteres orderby entrada.Value ascending select entrada;
-            TablaCaracteres = new Dictionary<char, object>();
-            //se introducirán los porcentajes de los caracteres en la tabla
-            foreach (var caracter in sorted)
-            {
-                double valor = (Convert.ToDouble(caracter.Value) / caracterestotales)*100;
-                //valor = Math.Truncate(valor)/1;
-                TablaCaracteres.Add(caracter.Key,  valor);
-                Elementos_De_La_Lista elemento = new Elementos_De_La_Lista();
-                elemento.frecuencia = Convert.ToInt32(caracter.Value);
-                lista.Add(elemento);
-            }
-            return RedirectToAction("Arbol");
-        }
-        //retorna los valores que contiene la lista
-        private static T GetAnyValue<T>(char strKey)
-        {
-            object obj;
-            T retType;
-
-            TablaCaracteres.TryGetValue(strKey, out obj);
-            try
-            {
-                retType = (T)obj;
-            }
-            catch
-            {
-                retType = default(T);
-            }
-            return retType;
-        }
-
-        //lista para introducir las llaves
-        static List<Elementos_De_La_Lista> lista = new List<Elementos_De_La_Lista>();
-        static List<char> ListAux = new List<char>();
-        public ActionResult Arbol()
-        {
-            //introducir todos los caracteres con sus respectivas probabilidades a la lista y sus cantidades
-            foreach(Elementos_De_La_Lista elem in lista)
-            { 
-                elem.caracter = Convert.ToChar(TablaCaracteres.Keys.First());
-                elem.probabilidad = Convert.ToDouble(TablaCaracteres.Values.First());
-                ListAux.Add(elem.caracter);
-                TablaCaracteres.Remove(elem.caracter);
-            }
-            
-            for(int i = 0; i < CantidadRepetidos+1; i++)
-            {
-                if (lista.Count < 2)
-                {
-                    break;
-                }
-                else
-                {
-                    Arbol arbol = new Arbol();
-                    NodoArbol Aux = new NodoArbol();
-                    NodoArbol izquierdo = new NodoArbol();
-                    NodoArbol derecho = new NodoArbol();
-                    string nombre = "n" + (i + 1);
-                    if (lista[0].Aux == null&&lista[1].Aux==null)
-                    {
-                        //hijo izquierdo
-                        izquierdo.caracter = Convert.ToString(lista[0].caracter);
-                        izquierdo.frecuencia = lista[0].frecuencia;
-                        izquierdo.probabilidad = lista[0].probabilidad;
-                        //hijo derecho
-                        derecho.caracter = Convert.ToString(lista[1].caracter);
-                        derecho.frecuencia = lista[1].frecuencia;
-                        derecho.probabilidad = lista[1].probabilidad;
-                    }
-                    else
-                    {
-                        if (lista[0].Aux != null && lista[1].Aux == null)
+                        Arbol Auxiliar = new Arbol();
+                        NodoArbol Aux = new NodoArbol();
+                        NodoArbol izquierdo = new NodoArbol();
+                        NodoArbol derecho = new NodoArbol();
+                        string nombre = "n" + (i + 1);
+                        if (lista[0].Aux == null && lista[1].Aux == null)
                         {
                             //hijo izquierdo
-                            izquierdo =lista[0].Aux;
+                            izquierdo.caracter = Convert.ToString(lista[0].caracter);
+                            izquierdo.probabilidad = lista[0].probabilidad;
                             //hijo derecho
                             derecho.caracter = Convert.ToString(lista[1].caracter);
-                            derecho.frecuencia = lista[1].frecuencia;
                             derecho.probabilidad = lista[1].probabilidad;
                         }
                         else
                         {
-                            if(lista[0].Aux == null && lista[1].Aux != null)
-                            {
-                                //hijo izquierdo
-                                izquierdo.caracter = Convert.ToString(lista[0].caracter);
-                                izquierdo.frecuencia = lista[0].frecuencia;
-                                izquierdo.probabilidad = lista[0].probabilidad;
-                                //hijo derecho
-                                derecho = lista[1].Aux;
-                            }
-                            else
+                            if (lista[0].Aux != null && lista[1].Aux == null)
                             {
                                 //hijo izquierdo
                                 izquierdo = lista[0].Aux;
                                 //hijo derecho
-                                derecho = lista[1].Aux;
+                                derecho.caracter = Convert.ToString(lista[1].caracter);
+                                derecho.probabilidad = lista[1].probabilidad;
+                            }
+                            else
+                            {
+                                if (lista[0].Aux == null && lista[1].Aux != null)
+                                {
+                                    //hijo izquierdo
+                                    izquierdo.caracter = Convert.ToString(lista[0].caracter);
+                                    izquierdo.probabilidad = lista[0].probabilidad;
+                                    //hijo derecho
+                                    derecho = lista[1].Aux;
+                                }
+                                else
+                                {
+                                    //hijo izquierdo
+                                    izquierdo = lista[0].Aux;
+                                    //hijo derecho
+                                    derecho = lista[1].Aux;
+                                }
+                            }
+                        }
+                        lista.Remove(lista[0]);
+                        lista[0] = null;
+                        Aux = Auxiliar.ingresar(izquierdo, derecho, nombre);
+                        Elementos_De_La_Lista elemento = new Elementos_De_La_Lista();
+                        elemento.Aux = Aux;
+                        elemento.probabilidad = Aux.probabilidad;
+                        if (lista.Count() > 1)
+                        {
+                            for (int j = 1; j < lista.Count(); j++)
+                            {
+                                if (lista[j].probabilidad > elemento.probabilidad)
+                                {
+                                    lista[j - 1] = elemento;
+                                    break;
+                                }
+                                else
+                                {
+                                    lista[j - 1] = lista[j];
+                                    lista[j] = null;
+                                    if (lista[lista.Count() - 1] == null)
+                                    {
+                                        lista[lista.Count() - 1] = elemento;
+                                    }
+                                }
+                            }
+                        }
+                        else
+                        {
+                            lista[0] = elemento;
+                        }
+                    }
+                }
+                Arbol.raíz = lista[0].Aux;
+                string prefíjo = "";
+                diccionario = Arbol.códigosPrefíjo(Arbol.raíz, diccionario, prefíjo);
+                //separación de los caracteres para convertirlos a decimal y luego a ASCII
+                List<char> cadena = new List<char>();
+                foreach (byte bit in ListaByte)
+                {
+                    if (diccionario.ContainsKey((char)bit))
+                    {
+                        CantidadChar separación = new CantidadChar();
+                        separación = GetAnyValue<int>(bit);
+                        foreach (char caracter in separación.codPref)
+                        {
+                            cadena.Add(caracter);
+                        }
+                        if (cadena.Count() > 8)
+                        {
+                            string x = "";
+                            for (int i = 0; i < 8; i++)
+                            {
+                                x = x + cadena[0];
+                                cadena.Remove(cadena[0]);
                             }
                         }
                     }
-                    for (int j = 0; j < 2; j++)
+                }
+                return View();
+            }
+
+
+        //Método de descompresión
+        //Lectura del archivo e introducir los códigos prefijos con sus respectivos caracteres al diccionario 
+        [HttpPost]
+        public ActionResult LecturaDescompresión(HttpPostedFileBase postedFile)
+        {
+            diccionario = new Dictionary<char, CantidadChar>();
+            using (var stream = new FileStream("C:\\Users\\mache\\Documents\\Segundo año\\Lab-1_1251518_1229918\\Lab 1_Serie 1_1251518_1229918\\Lab 1_Serie 1_1251518_1229918\\Archivos\\Actual.huff", FileMode.Open))
+            {
+                //te va a devolver un numero cualquiera
+                using (var reader = new BinaryReader(stream))
+                {
+                    var byteBuffer = new byte[bufferLengt];
+                    while (reader.BaseStream.Position != reader.BaseStream.Length)
                     {
-                        lista.Remove(lista[0]);
+                        byteBuffer = reader.ReadBytes(bufferLengt);
+                        char caracter = ' ';
+                        CantidadChar prefijo = new CantidadChar();
+                        bool verdad = false;
+                        for (int i = 0; i < byteBuffer.Count() + 1; i++)
+                        {
+                            if (verdad == false)
+                            {
+                                if (byteBuffer[i + 1] == 124)
+                                {
+                                    caracter = (char)byteBuffer[i];
+                                    verdad = true;
+                                    i++;
+                                }
+                            }
+                            else
+                            {
+                                if (i == byteBuffer.Count())
+                                {
+                                    diccionario.Add(caracter, prefijo);
+                                    verdad = false;
+                                    break;
+                                }
+                                if (byteBuffer[i] != 13)
+                                {
+                                    prefijo.codPref = prefijo.codPref + (char)byteBuffer[i];
+                                }
+                                else
+                                {
+                                    diccionario.Add(caracter, prefijo);
+                                    verdad = false;
+                                    prefijo = new CantidadChar();
+                                }
+                            }
+                        }
                     }
-                    Aux = arbol.ingresar(izquierdo, derecho, nombre);
-                    Elementos_De_La_Lista elemento = new Elementos_De_La_Lista();
-                    elemento.Aux = Aux;
-                    elemento.probabilidad = Aux.probabilidad;
-                    lista.Add(elemento);
-                    lista.Sort();
                 }
             }
-            NodoArbol árbol = new NodoArbol();
-            árbol = lista[0].Aux;
-            Arbol X = new Arbol();
-            Dictionary<char, string> códigoPrefíjos = new Dictionary<char, string>();
-            string prefíjo = "";
-            códigoPrefíjos=X.códigosPrefíjo(árbol, ListAux, códigoPrefíjos, prefíjo);
-
+            return View();
+        }
+        public ActionResult LecturaDescompresión()
+        {
             return View();
         }
     }

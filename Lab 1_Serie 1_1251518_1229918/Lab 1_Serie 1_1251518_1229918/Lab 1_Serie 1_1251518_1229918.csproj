@@ -122,6 +122,7 @@
       <DependentUpon>Global.asax</DependentUpon>
     </Compile>
     <Compile Include="Models\Arbol.cs" />
+    <Compile Include="Models\CantidadChar.cs" />
     <Compile Include="Models\Elementos De La Lista.cs" />
     <Compile Include="Models\NodoArbol.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />

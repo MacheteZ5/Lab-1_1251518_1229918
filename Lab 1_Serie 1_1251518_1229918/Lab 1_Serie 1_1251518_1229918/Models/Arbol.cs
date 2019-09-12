@@ -3,19 +3,17 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Web;
 using System.IO;
-using System.Text;
 
 namespace Lab_1_Serie_1_1251518_1229918.Models
 {
     public class Arbol
     {
         public NodoArbol raíz;
-
+        int cantidadNodos = 0;
         public Arbol()
         {
             raíz = null;
         }
-        int cantidadNodos = 0;
         public NodoArbol ingresar(NodoArbol izquierdo, NodoArbol derecho, string nombre)
         {
             raíz = new NodoArbol();
@@ -24,10 +22,9 @@ namespace Lab_1_Serie_1_1251518_1229918.Models
             raíz.caracter = nombre;
             raíz.probabilidad = derecho.probabilidad + izquierdo.probabilidad;
             return raíz;
-
         }
         //Método para escribir el caracter  su codigo prefijo en un archivo .huff
-        const int tamañoBuffer = 256;
+        const int tamañoBuffer = 10000;
         int espaciosUtilizados = 0;
         byte[] buffer = new byte[tamañoBuffer];
         int cantCaracteres = 0;
@@ -35,9 +32,9 @@ namespace Lab_1_Serie_1_1251518_1229918.Models
         {
             cantCaracteres++;
             string linea = $"{caracter}|{prefijo}";
-            while (buffer.Length >= espaciosUtilizados && espaciosUtilizados !=tamañoBuffer)
+            while (buffer.Length >= espaciosUtilizados && espaciosUtilizados != tamañoBuffer)
             {
-                if(tamañoBuffer - espaciosUtilizados > linea.Length)
+                if (tamañoBuffer - espaciosUtilizados > linea.Length)
                 {
                     for (int i = 0; i < linea.Length; i++)
                     {
@@ -50,58 +47,44 @@ namespace Lab_1_Serie_1_1251518_1229918.Models
                 break;
             }
 
-            if(cantCaracteres == cantidadNodos || cantCaracteres == tamañoBuffer || tamañoBuffer - espaciosUtilizados < linea.Length)
+            if (cantCaracteres == cantidadNodos || cantCaracteres == tamañoBuffer || tamañoBuffer - espaciosUtilizados < linea.Length)
             {
-                
-                using (var writeStream = new FileStream("C:\\Users\\Usuario\\Desktop\\nuevaprueba.huff", FileMode.OpenOrCreate))
+                using (var writeStream = new FileStream("C:\\Users\\usuario\\Desktop\\nuevaprueba.huff", FileMode.Append))
                 {
+                    //public virtual long Seek(int offset, System.IO.SeekOrigin origin);
                     using (var writer = new BinaryWriter(writeStream))
-                    {                       
-                            writer.Write(buffer);
-                        //falta el appendtext para conservar buffers escritos
+                    {
+                        writer.Write(buffer);
                     }
                 }
-                // se limpia el buffer
-                buffer = new byte[tamañoBuffer];
-                espaciosUtilizados = 0;
-
             }
-            //using (var writeStream = new FileStream("C:\\Users\\Usuario\\Desktop\\machete.huff", FileMode.Open))
-            //{
-            //    using (var writer = new StreamWriter(writeStream))
-            //    {
-            //        writer.Write($"{caracter}|{prefijo}");
-            //    }
-            //}
-
-
         }
-        
-        public Dictionary<char,string> códigosPrefíjo(NodoArbol raíz, List<char> dic, Dictionary<char, string> diccionario, string códigoprefíjo)
+        public Dictionary<char, CantidadChar> códigosPrefíjo(NodoArbol raíz, Dictionary<char, CantidadChar> dic, string códigoprefíjo)
         {
             if (raíz == null)
             {
-                return diccionario;
+                return dic;
             }
             else
             {
-                diccionario = códigosPrefíjo(raíz.hijoIzquierdo, dic, diccionario, códigoprefíjo+0);
+                dic = códigosPrefíjo(raíz.hijoIzquierdo, dic, códigoprefíjo + 0);
                 if (raíz.hijoDerecho == null && raíz.hijoIzquierdo == null)
                 {
-                    foreach (char c in dic)
+                    if (dic.ContainsKey(Convert.ToChar(raíz.caracter)))
                     {
-                        if (c == (Convert.ToChar(raíz.caracter)))
-                        {
-                            diccionario.Add(Convert.ToChar(raíz.caracter), códigoprefíjo);
-                            //se envian los valores y llaves del diccionario a un metodo que permite la escritura en los archvios generados
-                            cantidadNodos++;
-                            generarArchivoDiccionario(raíz.caracter, códigoprefíjo);
-                        }
+                        CantidadChar cantidad = new CantidadChar();
+                        cantidad.codPref = códigoprefíjo;
+                        //se envian los valores y llaves al diccionario para generar la tabla de prefíjos
+                        dic.Remove(Convert.ToChar(raíz.caracter));
+                        dic.Add(Convert.ToChar(raíz.caracter), cantidad);
+                        cantidadNodos++;
+                        generarArchivoDiccionario(raíz.caracter, códigoprefíjo);
                     }
                 }
-                diccionario = códigosPrefíjo(raíz.hijoDerecho, dic, diccionario, códigoprefíjo+1);
+                dic = códigosPrefíjo(raíz.hijoDerecho, dic, códigoprefíjo + 1);
             }
-            return diccionario;
+            return dic;
         }
+
     }
 }
