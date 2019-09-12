@@ -39,8 +39,7 @@
         margin-top: -9em;
         margin-left: -15em;
     }
-
- </style>
+</style>
 
 <body>
     <div id="titulo">
@@ -50,15 +49,15 @@
     </div>
     <div id="carga">
         <center>
-            @using (Html.BeginForm("Index", "Home", FormMethod.Post, new { enctype = "multipart/form-data" }))
+            @using (Html.BeginForm("LecturaDescompresión", "CompresorHuffman", FormMethod.Post, new { enctype = "multipart/form-data" }))
             {
                 <input id="archivo" type="file" name="postedFile" />
                 <input id="archivo" type="submit" value="Cargar Archivo" />
             }
-            <form action="CargarArchivo" method="post">
+            <form action="LecturaDescompresión" method="post">
                 <input id="comprimir" type="submit" name="enviar" value="Comprimir" />
             </form>
         </center>
     </div>
 </body>
-</html>
+</html>s

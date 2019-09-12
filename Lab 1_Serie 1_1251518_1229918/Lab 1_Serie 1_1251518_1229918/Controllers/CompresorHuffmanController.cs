@@ -19,15 +19,44 @@ namespace Lab_1_Serie_1_1251518_1229918.Controllers
         //el siguiente ActionResult permite guardar el texto del archivo en un string 
         public ActionResult Index(HttpPostedFileBase postedFile)
         {
-            string ArchivoLeido = string.Empty;
-            //el siguiente if permite seleccionar un archivo en específico
-            if (postedFile != null)
+            using (var stream = new FileStream("C:\\Users\\mache\\Documents\\BIBLIA COMPLETA.txt"/*KH 3.2.jpg*/, FileMode.Open))
             {
-                string ruta = Server.MapPath("~/Archivos/");
-                if (!Directory.Exists(ruta))
+                //te va a devolver un numero cualquiera
+                using (var reader = new BinaryReader(stream))
                 {
-                    Directory.CreateDirectory(ruta);
+                    var byteBuffer = new byte[bufferLengt];
+                    while (reader.BaseStream.Position != reader.BaseStream.Length)
+                    {
+                        byteBuffer = reader.ReadBytes(bufferLengt);
+                        foreach (byte bit in byteBuffer)
+                        {
+                            CantidadChar cantidad = new CantidadChar();
+                            if (diccionario.Count == 0)
+                            {
+                                cantidad.cantidad = 1;
+                                diccionario.Add((char)bit, cantidad);
+                            }
+                            else
+                            {
+                                if (diccionario.ContainsKey((char)bit))
+                                {
+                                    CantidadChar numero = GetAnyValue<int>(bit);
+                                    diccionario.Remove((char)bit);
+                                    cantidad.cantidad = numero.cantidad + 1;
+                                    diccionario.Add((char)bit, cantidad);
+                                }
+                                else
+                                {
+                                    cantidad.cantidad = 1;
+                                    diccionario.Add((char)bit, cantidad);
+                                }
+                            }
+                            ListaByte.Add(bit);
+                            caracterestotales++;
+                        }
+                    }
                 }
+
                 //se toma la ruta y nombre del archivo
                 ArchivoLeido = ruta + Path.GetFileName(postedFile.FileName);
                 // se añade la extensión del archivo
@@ -101,6 +130,57 @@ namespace Lab_1_Serie_1_1251518_1229918.Controllers
             static int caracterestotales = 0;
             //retorna los valores que contiene la lista
             public ActionResult SeparaciónDelTexto()
+
+            }
+           return RedirectToAction("SeparaciónDelTexto");
+        }
+        private static CantidadChar GetAnyValue<T>(byte Key)
+        {
+            CantidadChar obj;
+            CantidadChar retType;
+            diccionario.TryGetValue((char)Key, out obj);
+            try
+            {
+                retType = (CantidadChar)obj;
+            }
+            catch
+            {
+                retType = default(CantidadChar);
+            }
+            return retType;
+        }
+        public ActionResult Index()
+        {
+            return View();
+        }
+        static List<Elementos_De_La_Lista> lista= new List<Elementos_De_La_Lista>();
+
+        //Al momento de haber recibido el string del texto, habrá que separar caracter por caracter
+        static int caracterestotales = 0;
+        //retorna los valores que contiene la lista
+        public ActionResult SeparaciónDelTexto()
+        {
+            //se ordenará por orden ascendente la lista
+            var sorted = from entrada in diccionario orderby entrada.Value ascending select entrada;
+            //se introducirán los porcentajes de los caracteres en la tabla
+            foreach (var caracter in sorted)
+            {
+                Elementos_De_La_Lista elemento = new Elementos_De_La_Lista();
+                double aux = (Convert.ToDouble(caracter.Value.cantidad));
+                elemento.caracter = caracter.Key;
+                elemento.probabilidad =Convert.ToDouble((aux/caracterestotales));
+                lista.Add(elemento);
+            }
+            lista.Sort();
+            return RedirectToAction("Arbol");
+        }
+        public ActionResult Arbol()
+        {
+            //creación del árbol
+            Arbol Arbol = new Arbol();
+            int Repeticiones = lista.Count();
+            for (int i = 0; i < Repeticiones; i++)
+
             {
                 //se ordenará por orden ascendente la lista
                 var sorted = from entrada in diccionario orderby entrada.Value ascending select entrada;
@@ -123,9 +203,25 @@ namespace Lab_1_Serie_1_1251518_1229918.Controllers
                 int Repeticiones = lista.Count();
                 for (int i = 0; i < Repeticiones; i++)
                 {
+
                     if (lista.Count < 2)
                     {
                         break;
+
+                    Arbol Auxiliar = new Arbol();
+                    NodoArbol Aux = new NodoArbol();
+                    NodoArbol izquierdo = new NodoArbol();
+                    NodoArbol derecho = new NodoArbol();
+                    string nombre = "n" + (i + 1);
+                    if (lista[0].Aux == null && lista[1].Aux == null)
+                    {
+                        //hijo izquierdo
+                        izquierdo.caracter = Convert.ToString(lista[0].caracter);
+                        izquierdo.probabilidad = lista[0].probabilidad;
+                        //hijo derecho
+                        derecho.caracter = Convert.ToString(lista[1].caracter);
+                        derecho.probabilidad = lista[1].probabilidad;
+
                     }
                     else
                     {
@@ -137,18 +233,29 @@ namespace Lab_1_Serie_1_1251518_1229918.Controllers
                         if (lista[0].Aux == null && lista[1].Aux == null)
                         {
                             //hijo izquierdo
+
                             izquierdo.caracter = Convert.ToString(lista[0].caracter);
                             izquierdo.probabilidad = lista[0].probabilidad;
+
+                            izquierdo = lista[0].Aux;
+
                             //hijo derecho
                             derecho.caracter = Convert.ToString(lista[1].caracter);
                             derecho.probabilidad = lista[1].probabilidad;
                         }
                         else
                         {
+
                             if (lista[0].Aux != null && lista[1].Aux == null)
                             {
                                 //hijo izquierdo
                                 izquierdo = lista[0].Aux;
+                           if (lista[0].Aux == null && lista[1].Aux != null)
+                            {
+                                //hijo izquierdo
+                                izquierdo.caracter = Convert.ToString(lista[0].caracter);
+                                izquierdo.probabilidad = lista[0].probabilidad;
+
                                 //hijo derecho
                                 derecho.caracter = Convert.ToString(lista[1].caracter);
                                 derecho.probabilidad = lista[1].probabilidad;
@@ -203,6 +310,7 @@ namespace Lab_1_Serie_1_1251518_1229918.Controllers
                             lista[0] = elemento;
                         }
                     }
+
                 }
                 Arbol.raíz = lista[0].Aux;
                 string prefíjo = "";
@@ -229,9 +337,72 @@ namespace Lab_1_Serie_1_1251518_1229918.Controllers
                             }
                         }
                     }
+
+                    lista.Remove(lista[0]);
+                    lista[0] = null;
+                    Aux = Auxiliar.ingresar(izquierdo, derecho, nombre);
+                    Elementos_De_La_Lista elemento = new Elementos_De_La_Lista();
+                    elemento.Aux = Aux;
+                    elemento.probabilidad = Aux.probabilidad;
+                    if (lista.Count() > 1)
+                    {
+                        for (int j = 1; j < lista.Count(); j++)
+                        {
+                            if (lista[j].probabilidad > elemento.probabilidad)
+                            {
+                                lista[j - 1] = elemento;
+                                break;
+                            }
+                            else
+                            {
+                                lista[j - 1] = lista[j];
+                                lista[j] = null;
+                                if (lista[lista.Count() - 1] == null)
+                                {
+                                    lista[lista.Count() - 1] = elemento;
+                                }
+                            }
+                        }
+                    }
+                    else
+                    {
+                        lista[0] = elemento;
+                    }
+
                 }
                 return View();
             }
+
+
+            Arbol.raíz= lista[0].Aux;
+            string prefíjo = "";
+            diccionario = Arbol.códigosPrefíjo(Arbol.raíz, diccionario, prefíjo);
+            //separación de los caracteres para convertirlos a decimal y luego a ASCII
+            List<char> cadena = new List<char>();
+            foreach (byte bit in ListaByte)
+            {
+                if (diccionario.ContainsKey((char)bit))
+                {
+                    CantidadChar separación = new CantidadChar();
+                    separación = GetAnyValue<int>(bit);
+                    foreach (char caracter in separación.codPref)
+                    {
+                        cadena.Add(caracter);
+                    }
+                    if (cadena.Count() > 8)
+                    {
+                        string x = "";
+                        for(int i = 0; i < 8;i++)
+                        {
+                            x = x + cadena[0];
+                            cadena.Remove(cadena[0]);
+                        }
+                    }
+                }
+            }
+            return View();
+        }
+
 
 
         //Método de descompresión
@@ -252,7 +423,11 @@ namespace Lab_1_Serie_1_1251518_1229918.Controllers
                         char caracter = ' ';
                         CantidadChar prefijo = new CantidadChar();
                         bool verdad = false;
+
                         for (int i = 0; i < byteBuffer.Count() + 1; i++)
+
+                        for (int i = 0; i < byteBuffer.Count()+1; i++)
+
                         {
                             if (verdad == false)
                             {
