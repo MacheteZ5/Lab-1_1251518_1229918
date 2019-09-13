@@ -24,7 +24,7 @@ namespace Lab_1_Serie_1_1251518_1229918.Models
             return raíz;
         }
         //Método para escribir el caracter  su codigo prefijo en un archivo .huff
-        const int tamañoBuffer = 10000;
+        const int tamañoBuffer = 1048;
         int espaciosUtilizados = 0;
         byte[] buffer = new byte[tamañoBuffer];
         int cantCaracteres = 0;
@@ -49,15 +49,20 @@ namespace Lab_1_Serie_1_1251518_1229918.Models
 
             if (cantCaracteres == cantidadNodos || cantCaracteres == tamañoBuffer || tamañoBuffer - espaciosUtilizados < linea.Length)
             {
-                using (var writeStream = new FileStream("C:\\Users\\mache\\Desktop\\nuevaprueba.huff", FileMode.Append))
+                using (var writeStream = new FileStream("C:\\Users\\usuario\\Desktop\\nuevaprueba.huff", FileMode.OpenOrCreate))
                 {
                     //public virtual long Seek(int offset, System.IO.SeekOrigin origin);
                     using (var writer = new BinaryWriter(writeStream))
                     {
+
+                        writer.Seek(1, SeekOrigin.End);
                         writer.Write(buffer);
+                        
                     }
                 }
             }
+            buffer = new byte[tamañoBuffer];
+            espaciosUtilizados = 0;
         }
         //códigos prefíjo recorridos del árbol
         public Dictionary<char, CantidadChar> códigosPrefíjo(NodoArbol raíz, Dictionary<char, CantidadChar>dic, string códigoprefíjo)

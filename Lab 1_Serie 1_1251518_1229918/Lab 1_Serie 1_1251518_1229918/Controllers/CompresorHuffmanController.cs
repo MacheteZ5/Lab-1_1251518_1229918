@@ -19,25 +19,41 @@ namespace Lab_1_Serie_1_1251518_1229918.Controllers
         //el siguiente ActionResult permite guardar el texto del archivo en un string 
         public ActionResult Index(HttpPostedFileBase postedFile)
         {
-            using (var stream = new FileStream("C:\\Users\\mache\\Documents\\BIBLIA COMPLETA.txt"/*KH 3.2.jpg*/, FileMode.Open))
+            string ArchivoLeido = string.Empty;
+            //el siguiente if permite seleccionar un archivo en específico
+            if (postedFile != null)
             {
-                //te va a devolver un numero cualquiera
-                using (var reader = new BinaryReader(stream))
+                string ruta = Server.MapPath("~/Archivos/");
+                if (!Directory.Exists(ruta))
                 {
-                    var byteBuffer = new byte[bufferLengt];
-                    while (reader.BaseStream.Position != reader.BaseStream.Length)
+                    Directory.CreateDirectory(ruta);
+                }
+                //se toma la ruta y nombre del archivo
+                ArchivoLeido = ruta + Path.GetFileName(postedFile.FileName);
+                // se añade la extensión del archivo
+                string extension = Path.GetExtension(postedFile.FileName);
+                postedFile.SaveAs(ArchivoLeido);
+
+                using (var stream = new FileStream(ArchivoLeido, FileMode.Open))
+                { 
+
+                //te va a devolver un numero cualquiera
+                    using (var reader = new BinaryReader(stream))
                     {
-                        byteBuffer = reader.ReadBytes(bufferLengt);
-                        foreach (byte bit in byteBuffer)
+                        var byteBuffer = new byte[bufferLengt];
+                        while (reader.BaseStream.Position != reader.BaseStream.Length)
                         {
-                            CantidadChar cantidad = new CantidadChar();
-                            if (diccionario.Count == 0)
+                            byteBuffer = reader.ReadBytes(bufferLengt);
+                            foreach (byte bit in byteBuffer)
                             {
-                                cantidad.cantidad = 1;
-                                diccionario.Add((char)bit, cantidad);
-                            }
-                            else
-                            {
+                                 CantidadChar cantidad = new CantidadChar();
+                                if (diccionario.Count == 0)
+                                {
+                                   cantidad.cantidad = 1;
+                                   diccionario.Add((char)bit, cantidad);
+                                 }
+                                else
+                                 {
                                 if (diccionario.ContainsKey((char)bit))
                                 {
                                     CantidadChar numero = GetAnyValue<int>(bit);
@@ -51,11 +67,13 @@ namespace Lab_1_Serie_1_1251518_1229918.Controllers
                                     diccionario.Add((char)bit, cantidad);
                                 }
                             }
-                            ListaByte.Add(bit);
-                            caracterestotales++;
+                                   ListaByte.Add(bit);
+                                caracterestotales++;
+                            }
                         }
                     }
                 }
+
             }
            return RedirectToAction("SeparaciónDelTexto");
         }
