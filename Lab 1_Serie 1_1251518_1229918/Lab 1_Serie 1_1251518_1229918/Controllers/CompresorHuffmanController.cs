@@ -20,7 +20,7 @@ namespace Lab_1_Serie_1_1251518_1229918.Controllers
         //el siguiente ActionResult permite guardar el texto del archivo en un string 
         public ActionResult Index(HttpPostedFileBase postedFile)
         {
-            using (var stream = new FileStream("C:\\Users\\mache\\Documents\\BIBLIA COMPLETA.txt"/*KH 3.2.jpg*/, FileMode.Open))
+            using (var stream = new FileStream(postedFile.FileName, FileMode.Open))
             {
                 //te va a devolver un numero cualquiera
                 using (var reader = new BinaryReader(stream))
@@ -100,6 +100,8 @@ namespace Lab_1_Serie_1_1251518_1229918.Controllers
             lista.Sort();
             return RedirectToAction("Arbol");
         }
+
+        byte[] bytebuffer = new byte[100000];
         public ActionResult Arbol()
         {
             //creación del árbol
@@ -194,6 +196,7 @@ namespace Lab_1_Serie_1_1251518_1229918.Controllers
             //separación de los caracteres para convertirlos a decimal y luego a ASCII
             List<char> cadena = new List<char>();
             string x = "";
+            int cantidadbuffer = 0;
             foreach (byte bit in ListaByte)
             {
                 if (diccionario.ContainsKey((char)bit))
@@ -207,15 +210,45 @@ namespace Lab_1_Serie_1_1251518_1229918.Controllers
                     if (cadena.Count() > 8)
                     {
                         x = "";
-                        for(int i = 0; i < 8;i++)
+                        for (int i = 0; i < 8; i++)
                         {
                             x = x + cadena[0];
                             cadena.Remove(cadena[0]);
                         }
-                        Byte DECABYTE;
+                        byte DECABYTE;
                         var pref = x;
                         decimal Y = Convert.ToInt32(pref, 2);
                         DECABYTE = Convert.ToByte(Y);
+                        cantidadbuffer++;
+                        bytebuffer[cantidadbuffer] = DECABYTE;
+                    }
+                }
+                if (bytebuffer.Count() - 1 == cantidadbuffer)
+                {
+                    using (var writeStream = new FileStream("C:\\Users\\mache\\Desktop\\nuevaprueba.huff", FileMode.Open))
+                    {
+                        using (var writer = new BinaryWriter(writeStream))
+                        {
+                            writer.Seek(0, SeekOrigin.End);
+                            writer.Write(bytebuffer);
+                            bytebuffer = new byte[10000];
+                            cantidadbuffer = 0;
+                        }
+                    }
+                }
+            }
+            if (x != "")
+            {
+                while (x.Count() != 8)
+                {
+                    x = x + "0";
+                }
+                using (var writeStream = new FileStream("C:\\Users\\mache\\Desktop\\nuevaprueba.huff", FileMode.Open))
+                {
+                    using (var writer = new BinaryWriter(writeStream))
+                    {
+                        writer.Seek(0, SeekOrigin.End);
+                        writer.Write(bytebuffer);
                     }
                 }
             }
@@ -249,9 +282,9 @@ namespace Lab_1_Serie_1_1251518_1229918.Controllers
                         {
                             if (byteBuffer[i] == 45)
                             {
-                                if (byteBuffer[i + 1] == 13)
+                                if (byteBuffer[i + 1] != 124)
                                 {
-                                    if (byteBuffer[i - 1] == 10)
+                                    if (byteBuffer[i + 1] == 0)
                                     {
                                         separación = true;
                                     }
@@ -298,7 +331,7 @@ namespace Lab_1_Serie_1_1251518_1229918.Controllers
                                         verdad = false;
                                         break;
                                     }
-                                    if ((byteBuffer[i] != 10) && (byteBuffer[i] != 13))
+                                    if ((byteBuffer[i] != 10) && (byteBuffer[i] != 13)&&(byteBuffer[i]!=2))
                                     {
                                         prefijo.codPref = prefijo.codPref + (char)byteBuffer[i];
                                     }
@@ -307,21 +340,24 @@ namespace Lab_1_Serie_1_1251518_1229918.Controllers
                                         diccionario.Add(caracter, prefijo);
                                         verdad = false;
                                         prefijo = new CantidadChar();
-                                        caracter = ' ';
+                                        caracter = (char)byteBuffer[i];
                                     }
                                 }
                             }
                             else
                             {
-                               ASCII.Add(byteBuffer[i]);
+                                if (byteBuffer[i] != 0 && byteBuffer[i+1] != 0 && byteBuffer[i+2] != 0 && byteBuffer[i+3] != 0 && byteBuffer[i+4] != 0 && byteBuffer[i+5] != 0 && byteBuffer[i+6] != 0 && byteBuffer[i+7] != 0)
+                                {
+                                    ASCII.Add(byteBuffer[i]);
+                                }
+                                else
+                                {
+                                    break;
+                                }
                             }
                         }
                     }
                 }
-            }
-            for (int i = 0; i < 3; i++)
-            {
-                ASCII.Remove(ASCII[0]);
             }
             return RedirectToAction("GeneraciónDelArchivoOriginal");
         }
@@ -329,7 +365,6 @@ namespace Lab_1_Serie_1_1251518_1229918.Controllers
         {
             return View();
         }
-
         public string Convertir(byte bit, string binario)
         {
             while (bit > 0)

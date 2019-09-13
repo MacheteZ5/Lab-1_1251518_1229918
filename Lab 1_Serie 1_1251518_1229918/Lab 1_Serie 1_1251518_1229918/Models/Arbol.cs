@@ -24,37 +24,54 @@ namespace Lab_1_Serie_1_1251518_1229918.Models
             return raíz;
         }
         //Método para escribir el caracter  su codigo prefijo en un archivo .huff
-        const int tamañoBuffer = 10000;
+        const int tamañoBuffer = 100000;
         int espaciosUtilizados = 0;
         byte[] buffer = new byte[tamañoBuffer];
         int cantCaracteres = 0;
-        public void generarArchivoDiccionario(string caracter, string prefijo)
+        public void generarArchivoDiccionario(string caracter, string prefijo, Dictionary<char, CantidadChar> dic)
         {
             cantCaracteres++;
             string linea = $"{caracter}|{prefijo}";
-            while (buffer.Length >= espaciosUtilizados && espaciosUtilizados != tamañoBuffer)
+            for (int i = 0; i < linea.Length; i++)
             {
-                if (tamañoBuffer - espaciosUtilizados > linea.Length)
-                {
-                    for (int i = 0; i < linea.Length; i++)
-                    {
-                        buffer[espaciosUtilizados] = Convert.ToByte(linea[i]);
-                        espaciosUtilizados++;
-
-                    }
-                    break;
-                }
-                break;
+                buffer[espaciosUtilizados] = Convert.ToByte(linea[i]);
+                espaciosUtilizados++;
             }
-
-            if (cantCaracteres == cantidadNodos || cantCaracteres == tamañoBuffer || tamañoBuffer - espaciosUtilizados < linea.Length)
+            if (cantCaracteres ==dic.Count())
             {
+                buffer[espaciosUtilizados] = Convert.ToByte('-');
+                int conteo = 0;
                 using (var writeStream = new FileStream("C:\\Users\\mache\\Desktop\\nuevaprueba.huff", FileMode.OpenOrCreate))
                 {
-                    //public virtual long Seek(int offset, System.IO.SeekOrigin origin);
                     using (var writer = new BinaryWriter(writeStream))
                     {
-                        writer.Write(buffer);
+                        for (int j = 0; j < buffer.Count(); j++)
+                        {
+                            if(j == espaciosUtilizados)
+                            {
+                                writer.Write("\r\n");
+                                writer.Write(buffer[j]);
+                                writer.Write("\r\n");
+                                break;
+                            }
+                            if (buffer[j + 1] == 124)
+                            {
+                                if (conteo != 0)
+                                {
+                                    writer.Write("\r\n");
+                                    writer.Write(buffer[j]);
+                                }
+                                else
+                                {
+                                    writer.Write(buffer[j]);
+                                    conteo++;
+                                }
+                            }
+                            else
+                            {
+                                writer.Write(buffer[j]);
+                            }
+                        }
                     }
                 }
             }
@@ -74,11 +91,10 @@ namespace Lab_1_Serie_1_1251518_1229918.Models
                     {
                         CantidadChar cantidad = new CantidadChar();
                         cantidad.codPref = códigoprefíjo;
-                        //se envian los valores y llaves al diccionario para generar la tabla de prefíjos
                         dic.Remove(Convert.ToChar(raíz.caracter));
                         dic.Add(Convert.ToChar(raíz.caracter), cantidad);
                         cantidadNodos++;
-                        generarArchivoDiccionario(raíz.caracter, códigoprefíjo);
+                        generarArchivoDiccionario(raíz.caracter, códigoprefíjo, dic);
                     }
                 }
                 dic = códigosPrefíjo(raíz.hijoDerecho, dic, códigoprefíjo+1);
