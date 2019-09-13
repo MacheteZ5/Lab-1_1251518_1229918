@@ -40,6 +40,7 @@ namespace Lab_1_Serie_1_1251518_1229918.Models
             if (cantCaracteres ==dic.Count())
             {
                 buffer[espaciosUtilizados] = Convert.ToByte('-');
+                buffer[espaciosUtilizados+1] = Convert.ToByte('-');
                 int conteo = 0;
                 using (var writeStream = new FileStream("C:\\Users\\mache\\Desktop\\nuevaprueba.huff", FileMode.OpenOrCreate))
                 {
@@ -51,6 +52,7 @@ namespace Lab_1_Serie_1_1251518_1229918.Models
                             {
                                 writer.Write("\r\n");
                                 writer.Write(buffer[j]);
+                                writer.Write(buffer[j+1]);
                                 writer.Write("\r\n");
                                 break;
                             }

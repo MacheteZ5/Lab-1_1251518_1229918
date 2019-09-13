@@ -207,7 +207,7 @@ namespace Lab_1_Serie_1_1251518_1229918.Controllers
                     {
                         cadena.Add(caracter);
                     }
-                    if (cadena.Count() > 8)
+                    if (cadena.Count() > 8|| cadena.Count() == 8)
                     {
                         x = "";
                         for (int i = 0; i < 8; i++)
@@ -216,11 +216,10 @@ namespace Lab_1_Serie_1_1251518_1229918.Controllers
                             cadena.Remove(cadena[0]);
                         }
                         byte DECABYTE;
-                        var pref = x;
-                        decimal Y = Convert.ToInt32(pref, 2);
-                        DECABYTE = Convert.ToByte(Y);
-                        cantidadbuffer++;
+                        DECABYTE =ConvertirAByte(x);
+                        
                         bytebuffer[cantidadbuffer] = DECABYTE;
+                        cantidadbuffer++;
                     }
                 }
                 if (bytebuffer.Count() - 1 == cantidadbuffer)
@@ -254,6 +253,34 @@ namespace Lab_1_Serie_1_1251518_1229918.Controllers
             }
             return View();
         }
+        public byte ConvertirAByte(string cadena)
+        {
+            double numero = 0;
+            int x = 0;
+            int binario = 0;
+            foreach (char car in cadena)
+            {
+                binario = Convert.ToInt32(car);
+                if ( binario== 49)
+                {
+                    numero = numero + (Math.Pow(x,2));
+                }
+                x++;
+            }
+            return Convert.ToByte(numero);
+        }
+
+
+
+
+
+
+
+
+
+
+
+
 
 
         //Método de descompresión
@@ -282,12 +309,10 @@ namespace Lab_1_Serie_1_1251518_1229918.Controllers
                         {
                             if (byteBuffer[i] == 45)
                             {
-                                if (byteBuffer[i + 1] != 124)
+                                if (byteBuffer[i + 1] == 45)
                                 {
-                                    if (byteBuffer[i + 1] == 0)
-                                    {
-                                        separación = true;
-                                    }
+                                   separación = true;
+                                    i = i + 2;
                                 }
                             }
                             if (separación==false)
@@ -359,6 +384,10 @@ namespace Lab_1_Serie_1_1251518_1229918.Controllers
                     }
                 }
             }
+            for(int i = 0; i < 3; i++)
+            {
+                ASCII.Remove(ASCII[0]);
+            }
             return RedirectToAction("GeneraciónDelArchivoOriginal");
         }
         public ActionResult LecturaDescompresión()
@@ -369,8 +398,12 @@ namespace Lab_1_Serie_1_1251518_1229918.Controllers
         {
             while (bit > 0)
             {
-                binario = (bit % 2) + binario;
+                binario =(bit % 2)+binario;
                 bit = Convert.ToByte(Convert.ToInt32(bit / 2));
+            }
+            if (binario.Count() < 8)
+            {
+                binario = "0" + binario;
             }
             return binario;
         }
