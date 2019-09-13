@@ -59,6 +59,7 @@ namespace Lab_1_Serie_1_1251518_1229918.Models
                 }
             }
         }
+        //códigos prefíjo recorridos del árbol
         public Dictionary<char, CantidadChar> códigosPrefíjo(NodoArbol raíz, Dictionary<char, CantidadChar>dic, string códigoprefíjo)
         {
             if (raíz == null)
