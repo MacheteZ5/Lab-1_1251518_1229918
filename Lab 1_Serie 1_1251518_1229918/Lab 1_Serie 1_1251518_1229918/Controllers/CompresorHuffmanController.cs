@@ -101,7 +101,6 @@ namespace Lab_1_Serie_1_1251518_1229918.Controllers
             return RedirectToAction("Arbol");
         }
 
-        byte[] bytebuffer = new byte[10000];
         public ActionResult Arbol()
         {
             //creación del árbol
@@ -193,55 +192,67 @@ namespace Lab_1_Serie_1_1251518_1229918.Controllers
             Arbol.raíz = lista[0].Aux;
             string prefíjo = "";
             diccionario = Arbol.códigosPrefíjo(Arbol.raíz, diccionario, prefíjo);
-            //separación de los caracteres para convertirlos a decimal y luego a ASCII
-            List<char> cadena = new List<char>();
-            
-            
-            
-            
+
+
+
             //Escritura del compresor códigos prefíjos convertidos a bytes
-            int cantidadbuffer = 0;
-            foreach (byte bit in ListaByte)
+            using (var writeStream = new FileStream("C:\\Users\\mache\\Desktop\\nuevaprueba.huff", FileMode.Open))
             {
-                CantidadChar separación = new CantidadChar();
-                separación = GetAnyValue<int>(bit);
-                foreach (char caracter in separación.codPref)
+                using (var writer = new BinaryWriter(writeStream))
                 {
-                    cadena.Add(caracter);
-                }
-            }
-            string binario = "";
-            foreach (char car in cadena)
-            {
-                if (binario.Count() == 8)
-                {
-                    byte DECABYTE = new byte();
-                    var pref = binario;
-                    decimal x = Convert.ToInt32(pref, 2);
-                    DECABYTE = Convert.ToByte(x);
-                    bytebuffer[cantidadbuffer] = DECABYTE;
-                    cantidadbuffer++;
-                    binario = "";
-                    binario = binario + car;
-                }
-                else
-                {
-                    binario = binario + car;
-                }
-            }
-            if (binario != "")
-            {
-                while (binario.Count() != 8)
-                {
-                    binario = binario + "0";
-                }
-                using (var writeStream = new FileStream("C:\\Users\\mache\\Desktop\\nuevaprueba.huff", FileMode.Open))
-                {
-                    using (var writer = new BinaryWriter(writeStream))
+                    byte[] bytebuffer = new byte[500];
+                    List<char> cadena = new List<char>();
+                    int cantidadbuffer = 0;
+                    foreach (byte bit in ListaByte)
                     {
+                        CantidadChar separación = new CantidadChar();
+                        separación = GetAnyValue<int>(bit);
+                        foreach (char caracter in separación.codPref)
+                        {
+                            cadena.Add(caracter);
+                        }
+                    }
+                    string binario = "";
+                    foreach (char car in cadena)
+                    {
+                        if (binario.Count() == 8)
+                        {
+                            byte DECABYTE = new byte();
+                            var pref = binario;
+                            decimal x = Convert.ToInt32(pref, 2);
+                            DECABYTE = Convert.ToByte(x);
+                            bytebuffer[cantidadbuffer] = DECABYTE;
+                            cantidadbuffer++;
+                            binario = "";
+                            binario = binario + car;
+                        }
+                        else
+                        {
+                            binario = binario + car;
+                        }
+                        if (cantidadbuffer== 500)
+                        {
+                            writer.Seek(0, SeekOrigin.End);
+                            writer.Write(bytebuffer);
+                            cantidadbuffer = 0;
+                            bytebuffer = new byte[500];
+                        }
+                    }
+                    if (binario != "")
+                    {
+                        while (binario.Count() != 8)
+                        {
+                            binario = binario + "0";
+                        }
+                        byte DECABYTE = new byte();
+                        var pref = binario;
+                        decimal x = Convert.ToInt32(pref, 2);
+                        DECABYTE = Convert.ToByte(x);
+                        bytebuffer[cantidadbuffer] = DECABYTE;
                         writer.Seek(0, SeekOrigin.End);
                         writer.Write(bytebuffer);
                     }
+
                 }
             }
             return View();
