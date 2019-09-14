@@ -1,0 +1,4 @@
+variable continua, un peso. dependinendo de la exactitud del instrumento de medición se vera afectado el valor que corresponde a la variale
+una discreta, es una variable cerrada, no contiene decimales si el numérica. la medida de presición no lo permite
+una muestra es considerada cuando tiene más de 30 datos, ya es considerada representativa en cuanto a la población
+grafica con dos variables, dispersión
