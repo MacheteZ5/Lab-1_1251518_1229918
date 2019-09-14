@@ -13,14 +13,36 @@ namespace Lab_1_Serie_1_1251518_1229918.Controllers
         //diccionario donde se guardarán las variables como llaves y sus cantidades de aparición como los valores
         static Dictionary<char, CantidadChar> diccionario = new Dictionary<char, CantidadChar>();
         static string RutaArchivos = "";
-        static string ArchivoLeido = "";
 
+        static string ArchivoLeido = "";
         static List<byte> ListaByte = new List<byte>();
         //largo del buffer al momento de la lectura
         const int bufferLengt = 1000;
         [HttpPost]
         public ActionResult LecturaCompresión(HttpPostedFileBase postedFile)
         {
+
+            //el siguiente if permite seleccionar un archivo en específico
+            if (postedFile != null)
+            {
+                string rutaDirectorioUsuario = Server.MapPath("");
+                string ArchivoLeido = string.Empty;
+
+                //se toma la ruta y nombre del archivo
+                ArchivoLeido = rutaDirectorioUsuario + Path.GetFileName(postedFile.FileName);
+                // se añade la extensión del archivo
+                string extension = Path.GetExtension(postedFile.FileName);
+                RutaArchivos = rutaDirectorioUsuario;
+                Arbol send = new Arbol();
+                send.recibirRutaArchivo(RutaArchivos);
+                postedFile.SaveAs(ArchivoLeido);
+
+
+                using (var stream = new FileStream(ArchivoLeido, FileMode.Open))
+                {
+                    //te va a devolver un numero cualquiera
+            string ArchivoLeido = string.Empty;
+
             //el siguiente if permite seleccionar un archivo en específico
             if (postedFile != null)
             {
@@ -47,8 +69,21 @@ namespace Lab_1_Serie_1_1251518_1229918.Controllers
                             byteBuffer = reader.ReadBytes(bufferLengt);
                             foreach (byte bit in byteBuffer)
                             {
+
                                 CantidadChar cantidad = new CantidadChar();
                                 if (diccionario.Count == 0)
+
+                                 CantidadChar cantidad = new CantidadChar();
+                                if (diccionario.Count == 0)
+                                {
+                                   cantidad.cantidad = 1;
+                                   diccionario.Add((char)bit, cantidad);
+                                 }
+                                else
+                                 {
+                                if (diccionario.ContainsKey((char)bit))
+
+
                                 {
                                     cantidad.cantidad = 1;
                                     diccionario.Add((char)bit, cantidad);
@@ -69,6 +104,12 @@ namespace Lab_1_Serie_1_1251518_1229918.Controllers
                                     }
                                 }
                                 ListaByte.Add(bit);
+                                caracterestotales++;
+                            }
+
+
+
+                                   ListaByte.Add(bit);
                                 caracterestotales++;
                             }
                         }
@@ -233,6 +274,7 @@ namespace Lab_1_Serie_1_1251518_1229918.Controllers
             string prefíjo = "";
             diccionario = Arbol.códigosPrefíjo(Arbol.raíz, diccionario, prefíjo);
 
+
             //Escritura del compresor códigos prefíjos convertidos a bytes
             using (var writeStream = new FileStream(RutaArchivos + "\\..\\Files\\archivoComprimido.huff", FileMode.Open))
             {
@@ -315,7 +357,6 @@ namespace Lab_1_Serie_1_1251518_1229918.Controllers
 
             return RedirectToAction("Download");
         }
-
         //Método de descompresión
         //Lectura del archivo e introducir los códigos prefijos con sus respectivos caracteres al diccionario 
         static List<byte> ASCII = new List<byte>();
@@ -323,7 +364,11 @@ namespace Lab_1_Serie_1_1251518_1229918.Controllers
         public ActionResult LecturaDescompresión(HttpPostedFileBase postedFile)
         {
             diccionario = new Dictionary<char, CantidadChar>();
+
+            //using (var stream = new FileStream(Convert.ToString(postedFile.FileName), FileMode.Open))
+
             using (var stream = new FileStream(RutaArchivos + "\\..\\Files\\archivoComprimido.huff", FileMode.Open))
+
             {
                 using (var reader = new BinaryReader(stream))
                 {
@@ -420,6 +465,93 @@ namespace Lab_1_Serie_1_1251518_1229918.Controllers
         }
         public ActionResult LecturaDescompresión()
         {
+
+            return View();
+        }
+        public string Convertir(byte bit, string binario)
+        {
+            bit = Convert.ToByte(int.Parse(Convert.ToString(bit)));
+            while (true)
+            {
+                if ((bit % 2) != 0)
+                {
+                    binario = "1" + binario;
+ 
+                }
+                else
+                {
+                    binario = "0" + binario;
+                }
+                bit /=2;
+                if (bit <= 0)
+                {
+                    break;
+                }
+            }
+            if (binario.Count() <= 8)
+            {
+                while (binario.Count()!=8)
+                {
+                    binario = "0" + binario;
+                }
+            }
+            return binario;
+        }
+        public ActionResult GeneraciónDelArchivoOriginal()
+        {
+            string binario = "";
+            string texto = "";
+            CantidadChar valor = new CantidadChar();
+            foreach (byte bit in ASCII)
+            {
+                binario = "";
+                binario = binario + Convertir(bit, binario);
+                foreach (char car in binario)
+                {
+                    valor.codPref = valor.codPref + car;
+                    foreach (char Key in diccionario.Keys)
+                    {
+                        CantidadChar valor2 = GetAnyValue<CantidadChar>(Convert.ToByte(Key));
+                        if (valor.codPref == valor2.codPref)
+                        {
+                            texto = texto + Key;
+                            //clave = "";
+                            valor = new CantidadChar();
+                        }
+                    }
+                }
+            }
+            using (var writeStream = new FileStream(RutaArchivos + "\\..\\Files\\archivoDescomprimido.huff", FileMode.OpenOrCreate))
+            {
+                using (var writer = new BinaryWriter(writeStream))
+                {
+                    int cantidadvecesbuffer = 0;
+                    byte[] byteBufferfinal = new byte[100];
+                    int cantidad = 0;
+                    foreach (char carfinal in texto)
+                    {
+                        byteBufferfinal[cantidad] = Convert.ToByte(carfinal);
+                        cantidad++;
+                        if (cantidad == 100)
+                        {
+                            if (cantidadvecesbuffer == 0)
+                            {
+                                writer.Write(byteBufferfinal);
+                                byteBufferfinal = new byte[100];
+                                cantidadvecesbuffer++;
+                                cantidad = 0;
+                            }
+                            else
+                            {
+                                writer.Seek(0, SeekOrigin.End);
+                                writer.Write(byteBufferfinal);
+                                byteBufferfinal = new byte[100];
+                                cantidad = 0;
+                            }
+                        }
+                    }                    
+                }
+            }
             return View();
         }
         public string Convertir(byte bit, string binario)

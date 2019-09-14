@@ -11,8 +11,6 @@
         @foreach (var item in ViewData.Model)
         {
             @Html.ActionLink((string)item, "DownloadFile", new { filename = item });
-
-            <br />
         }
     </div>
 

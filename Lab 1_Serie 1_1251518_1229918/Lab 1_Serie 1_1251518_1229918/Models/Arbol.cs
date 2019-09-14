@@ -29,6 +29,7 @@ namespace Lab_1_Serie_1_1251518_1229918.Models
             return raíz;
         }
         //Método para escribir el caracter  su codigo prefijo en un archivo .huff
+
         const int tamañoBuffer = 100000;
         int espaciosUtilizados = 0;
         byte[] buffer = new byte[tamañoBuffer];
@@ -82,6 +83,11 @@ namespace Lab_1_Serie_1_1251518_1229918.Models
                     }
                 }
             }
+
+            buffer = new byte[tamañoBuffer];
+            espaciosUtilizados = 0;
+        }
+        //códigos prefíjo recorridos del árbol
         }
         public Dictionary<char, CantidadChar> códigosPrefíjo(NodoArbol raíz, Dictionary<char, CantidadChar>dic, string códigoprefíjo)
         {
