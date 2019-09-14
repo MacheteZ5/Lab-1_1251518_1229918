@@ -49,7 +49,7 @@ namespace Lab_1_Serie_1_1251518_1229918.Models
                 buffer[espaciosUtilizados] = Convert.ToByte('-');
                 buffer[espaciosUtilizados+1] = Convert.ToByte('-');
                 int conteo = 0;
-                using (var writeStream = new FileStream(RutaArchivos+"\\..\\Archivos\\archivo.huff", FileMode.OpenOrCreate))
+                using (var writeStream = new FileStream(RutaArchivos+"\\..\\Files\\archivo.huff", FileMode.OpenOrCreate))
                 {
                     using (var writer = new BinaryWriter(writeStream))
                     {

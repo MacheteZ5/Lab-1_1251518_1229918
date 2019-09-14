@@ -52,12 +52,9 @@
             @using (Html.BeginForm("LecturaCompresión", "CompresorHuffman", FormMethod.Post, new { enctype = "multipart/form-data" }))
             {
                 <input id="archivo" type="file" name="postedFile" />
-                <input id="archivo" type="submit" value="Cargar Archivo" />
+                <input id="archivo" type="submit" value="Comprimir Archivo" />
             }
-            <form action="LecturaCompresión" method="post">
-                <input id="comprimir" type="submit" name="enviar" value="comprimir" />
-            </form>
         </center>
     </div>
 </body>
-</html>s
+</html>

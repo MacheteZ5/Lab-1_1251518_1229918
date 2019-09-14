@@ -83,6 +83,29 @@ namespace Lab_1_Serie_1_1251518_1229918.Controllers
                 return RedirectToAction("SeparaciónDelTexto");
             
         }
+
+        public ActionResult Download()
+        {
+            string path = Server.MapPath("~/Files/");
+            DirectoryInfo dirInfo = new DirectoryInfo(path);
+            FileInfo[] files = dirInfo.GetFiles("*.*");
+            List<string> lista = new List<string>(files.Length);
+            foreach (var item in files)
+            {
+                lista.Add(item.Name);
+            }
+            return View (lista);
+        }
+        public ActionResult DownloadFile(string filename)
+        {
+           
+                string fullPath = Path.Combine(Server.MapPath("~/Files/"), filename);
+           
+            //return new HttpStatusCodeResult(System.Net.HttpStatusCode.Forbidden);
+
+            return File(fullPath, System.Net.Mime.MediaTypeNames.Application.Octet, filename);
+        }
+
         public ActionResult LecturaCompresión()
         {
             return View();
@@ -252,7 +275,7 @@ namespace Lab_1_Serie_1_1251518_1229918.Controllers
                 }
                 if (bytebuffer.Count() - 1 == cantidadbuffer)
                 {
-                    using (var writeStream = new FileStream(RutaArchivos+ "\\..\\Archivos\\archivo.huff", FileMode.Open))
+                    using (var writeStream = new FileStream(RutaArchivos+ "\\..\\Files\\archivo.huff", FileMode.Open))
                     {
                         using (var writer = new BinaryWriter(writeStream))
                         {
@@ -270,7 +293,7 @@ namespace Lab_1_Serie_1_1251518_1229918.Controllers
                 {
                     x = x + "0";
                 }
-                using (var writeStream = new FileStream(RutaArchivos + "\\..\\Archivos\\archivo.huff", FileMode.Open))
+                using (var writeStream = new FileStream(RutaArchivos + "\\..\\Files\\archivo.huff", FileMode.Open))
                 {
                     using (var writer = new BinaryWriter(writeStream))
                     {
@@ -279,7 +302,7 @@ namespace Lab_1_Serie_1_1251518_1229918.Controllers
                     }
                 }
             }
-            return View();
+            return RedirectToAction("Download");
         }
         public byte ConvertirAByte(string cadena)
         {

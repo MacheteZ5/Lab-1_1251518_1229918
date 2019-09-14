@@ -1,0 +1,261 @@
+
+Usuario@DESKTOP-QNE71D6 MINGW64 ~
+$ cd documents
+
+Usuario@DESKTOP-QNE71D6 MINGW64 ~/documents
+$ git clone https://github.com/feroliv4z/test-ed2.git
+Cloning into 'test-ed2'...
+remote: Enumerating objects: 3, done.
+remote: Counting objects: 100% (3/3), done.
+remote: Compressing objects: 100% (2/2), done.
+remote: Total 3 (delta 0), reused 0 (delta 0), pack-reused 0
+Unpacking objects: 100% (3/3), done.
+
+Usuario@DESKTOP-QNE71D6 MINGW64 ~/documents
+$ git status
+fatal: not a git repository (or any of the parent directories): .git
+
+Usuario@DESKTOP-QNE71D6 MINGW64 ~/documents
+$ cd test-ed2
+
+Usuario@DESKTOP-QNE71D6 MINGW64 ~/documents/test-ed2 (master)
+$ git branch
+* master
+
+Usuario@DESKTOP-QNE71D6 MINGW64 ~/documents/test-ed2 (master)
+$ git status
+On branch master
+Your branch is up to date with 'origin/master'.
+
+Untracked files:
+  (use "git add <file>..." to include in what will be committed)
+
+        test-ed2.sln
+        test-ed2/
+
+nothing added to commit but untracked files present (use "git add" to track)
+
+Usuario@DESKTOP-QNE71D6 MINGW64 ~/documents/test-ed2 (master)
+$ git checkout -b scaffolding
+Switched to a new branch 'scaffolding'
+
+Usuario@DESKTOP-QNE71D6 MINGW64 ~/documents/test-ed2 (scaffolding)
+$ git status
+On branch scaffolding
+Untracked files:
+  (use "git add <file>..." to include in what will be committed)
+
+        test-ed2.sln
+        test-ed2/
+
+nothing added to commit but untracked files present (use "git add" to track)
+
+Usuario@DESKTOP-QNE71D6 MINGW64 ~/documents/test-ed2 (scaffolding)
+$ git add .
+warning: LF will be replaced by CRLF in test-ed2/Content/bootstrap-theme.css.
+The file will have its original line endings in your working directory
+warning: LF will be replaced by CRLF in test-ed2/Content/bootstrap-theme.min.css.
+The file will have its original line endings in your working directory
+warning: LF will be replaced by CRLF in test-ed2/Content/bootstrap.css.
+The file will have its original line endings in your working directory
+warning: LF will be replaced by CRLF in test-ed2/Content/bootstrap.min.css.
+The file will have its original line endings in your working directory
+warning: LF will be replaced by CRLF in test-ed2/Scripts/bootstrap.js.
+The file will have its original line endings in your working directory
+warning: LF will be replaced by CRLF in test-ed2/Scripts/bootstrap.min.js.
+The file will have its original line endings in your working directory
+warning: LF will be replaced by CRLF in test-ed2/Scripts/jquery-3.3.1.js.
+The file will have its original line endings in your working directory
+warning: LF will be replaced by CRLF in test-ed2/Scripts/jquery-3.3.1.min.js.
+The file will have its original line endings in your working directory
+warning: LF will be replaced by CRLF in test-ed2/Scripts/jquery-3.3.1.slim.js.
+The file will have its original line endings in your working directory
+warning: LF will be replaced by CRLF in test-ed2/Scripts/jquery-3.3.1.slim.min.js.
+The file will have its original line endings in your working directory
+warning: LF will be replaced by CRLF in test-ed2/Scripts/jquery.validate.js.
+The file will have its original line endings in your working directory
+warning: LF will be replaced by CRLF in test-ed2/Scripts/jquery.validate.min.js.
+The file will have its original line endings in your working directory
+warning: LF will be replaced by CRLF in test-ed2/Scripts/jquery.validate.unobtrusive.min.js.
+The file will have its original line endings in your working directory
+warning: LF will be replaced by CRLF in test-ed2/Scripts/modernizr-2.8.3.js.
+The file will have its original line endings in your working directory
+warning: LF will be replaced by CRLF in test-ed2/fonts/glyphicons-halflings-regular.svg.
+The file will have its original line endings in your working directory
+
+Usuario@DESKTOP-QNE71D6 MINGW64 ~/documents/test-ed2 (scaffolding)
+$ git status
+On branch scaffolding
+Changes to be committed:
+  (use "git reset HEAD <file>..." to unstage)
+
+        new file:   test-ed2.sln
+        new file:   test-ed2/App_Start/BundleConfig.cs
+        new file:   test-ed2/App_Start/FilterConfig.cs
+        new file:   test-ed2/App_Start/RouteConfig.cs
+        new file:   test-ed2/Content/Site.css
+        new file:   test-ed2/Content/bootstrap-theme.css
+        new file:   test-ed2/Content/bootstrap-theme.css.map
+        new file:   test-ed2/Content/bootstrap-theme.min.css
+        new file:   test-ed2/Content/bootstrap-theme.min.css.map
+        new file:   test-ed2/Content/bootstrap.css
+        new file:   test-ed2/Content/bootstrap.css.map
+        new file:   test-ed2/Content/bootstrap.min.css
+        new file:   test-ed2/Content/bootstrap.min.css.map
+        new file:   test-ed2/Controllers/HomeController.cs
+        new file:   test-ed2/Global.asax
+        new file:   test-ed2/Global.asax.cs
+        new file:   test-ed2/Properties/AssemblyInfo.cs
+        new file:   test-ed2/Scripts/bootstrap.js
+        new file:   test-ed2/Scripts/bootstrap.min.js
+        new file:   test-ed2/Scripts/jquery-3.3.1.intellisense.js
+        new file:   test-ed2/Scripts/jquery-3.3.1.js
+        new file:   test-ed2/Scripts/jquery-3.3.1.min.js
+        new file:   test-ed2/Scripts/jquery-3.3.1.min.map
+        new file:   test-ed2/Scripts/jquery-3.3.1.slim.js
+        new file:   test-ed2/Scripts/jquery-3.3.1.slim.min.js
+        new file:   test-ed2/Scripts/jquery-3.3.1.slim.min.map
+        new file:   test-ed2/Scripts/jquery.validate-vsdoc.js
+        new file:   test-ed2/Scripts/jquery.validate.js
+        new file:   test-ed2/Scripts/jquery.validate.min.js
+        new file:   test-ed2/Scripts/jquery.validate.unobtrusive.js
+        new file:   test-ed2/Scripts/jquery.validate.unobtrusive.min.js
+        new file:   test-ed2/Scripts/modernizr-2.8.3.js
+        new file:   test-ed2/Views/Home/About.cshtml
+        new file:   test-ed2/Views/Home/Contact.cshtml
+        new file:   test-ed2/Views/Home/Index.cshtml
+        new file:   test-ed2/Views/Shared/Error.cshtml
+        new file:   test-ed2/Views/Shared/_Layout.cshtml
+        new file:   test-ed2/Views/Web.config
+        new file:   test-ed2/Views/_ViewStart.cshtml
+        new file:   test-ed2/Web.Debug.config
+        new file:   test-ed2/Web.Release.config
+        new file:   test-ed2/Web.config
+        new file:   test-ed2/favicon.ico
+        new file:   test-ed2/fonts/glyphicons-halflings-regular.eot
+        new file:   test-ed2/fonts/glyphicons-halflings-regular.svg
+        new file:   test-ed2/fonts/glyphicons-halflings-regular.ttf
+        new file:   test-ed2/fonts/glyphicons-halflings-regular.woff
+        new file:   test-ed2/fonts/glyphicons-halflings-regular.woff2
+        new file:   test-ed2/packages.config
+        new file:   test-ed2/test-ed2.csproj
+
+
+Usuario@DESKTOP-QNE71D6 MINGW64 ~/documents/test-ed2 (scaffolding)
+$ git commit -m "scripts views"
+[scaffolding 194a49c] scripts views
+ 50 files changed, 36846 insertions(+)
+ create mode 100644 test-ed2.sln
+ create mode 100644 test-ed2/App_Start/BundleConfig.cs
+ create mode 100644 test-ed2/App_Start/FilterConfig.cs
+ create mode 100644 test-ed2/App_Start/RouteConfig.cs
+ create mode 100644 test-ed2/Content/Site.css
+ create mode 100644 test-ed2/Content/bootstrap-theme.css
+ create mode 100644 test-ed2/Content/bootstrap-theme.css.map
+ create mode 100644 test-ed2/Content/bootstrap-theme.min.css
+ create mode 100644 test-ed2/Content/bootstrap-theme.min.css.map
+ create mode 100644 test-ed2/Content/bootstrap.css
+ create mode 100644 test-ed2/Content/bootstrap.css.map
+ create mode 100644 test-ed2/Content/bootstrap.min.css
+ create mode 100644 test-ed2/Content/bootstrap.min.css.map
+ create mode 100644 test-ed2/Controllers/HomeController.cs
+ create mode 100644 test-ed2/Global.asax
+ create mode 100644 test-ed2/Global.asax.cs
+ create mode 100644 test-ed2/Properties/AssemblyInfo.cs
+ create mode 100644 test-ed2/Scripts/bootstrap.js
+ create mode 100644 test-ed2/Scripts/bootstrap.min.js
+ create mode 100644 test-ed2/Scripts/jquery-3.3.1.intellisense.js
+ create mode 100644 test-ed2/Scripts/jquery-3.3.1.js
+ create mode 100644 test-ed2/Scripts/jquery-3.3.1.min.js
+ create mode 100644 test-ed2/Scripts/jquery-3.3.1.min.map
+ create mode 100644 test-ed2/Scripts/jquery-3.3.1.slim.js
+ create mode 100644 test-ed2/Scripts/jquery-3.3.1.slim.min.js
+ create mode 100644 test-ed2/Scripts/jquery-3.3.1.slim.min.map
+ create mode 100644 test-ed2/Scripts/jquery.validate-vsdoc.js
+ create mode 100644 test-ed2/Scripts/jquery.validate.js
+ create mode 100644 test-ed2/Scripts/jquery.validate.min.js
+ create mode 100644 test-ed2/Scripts/jquery.validate.unobtrusive.js
+ create mode 100644 test-ed2/Scripts/jquery.validate.unobtrusive.min.js
+ create mode 100644 test-ed2/Scripts/modernizr-2.8.3.js
+ create mode 100644 test-ed2/Views/Home/About.cshtml
+ create mode 100644 test-ed2/Views/Home/Contact.cshtml
+ create mode 100644 test-ed2/Views/Home/Index.cshtml
+ create mode 100644 test-ed2/Views/Shared/Error.cshtml
+ create mode 100644 test-ed2/Views/Shared/_Layout.cshtml
+ create mode 100644 test-ed2/Views/Web.config
+ create mode 100644 test-ed2/Views/_ViewStart.cshtml
+ create mode 100644 test-ed2/Web.Debug.config
+ create mode 100644 test-ed2/Web.Release.config
+ create mode 100644 test-ed2/Web.config
+ create mode 100644 test-ed2/favicon.ico
+ create mode 100644 test-ed2/fonts/glyphicons-halflings-regular.eot
+ create mode 100644 test-ed2/fonts/glyphicons-halflings-regular.svg
+ create mode 100644 test-ed2/fonts/glyphicons-halflings-regular.ttf
+ create mode 100644 test-ed2/fonts/glyphicons-halflings-regular.woff
+ create mode 100644 test-ed2/fonts/glyphicons-halflings-regular.woff2
+ create mode 100644 test-ed2/packages.config
+ create mode 100644 test-ed2/test-ed2.csproj
+
+Usuario@DESKTOP-QNE71D6 MINGW64 ~/documents/test-ed2 (scaffolding)
+$ git push
+fatal: The current branch scaffolding has no upstream branch.
+To push the current branch and set the remote as upstream, use
+
+    git push --set-upstream origin scaffolding
+
+
+Usuario@DESKTOP-QNE71D6 MINGW64 ~/documents/test-ed2 (scaffolding)
+$ git push git push
+error: src refspec push does not match any.
+error: failed to push some refs to 'git'
+
+Usuario@DESKTOP-QNE71D6 MINGW64 ~/documents/test-ed2 (scaffolding)
+$ scanffolding^C
+bash: scanffolding^C: command not found
+
+Usuario@DESKTOP-QNE71D6 MINGW64 ~/documents/test-ed2 (scaffolding)
+$ git push --set-upstream origin scaffolding
+Enumerating objects: 63, done.
+Counting objects: 100% (63/63), done.
+Delta compression using up to 4 threads
+Compressing objects: 100% (60/60), done.
+Writing objects: 100% (62/62), 552.24 KiB | 2.13 MiB/s, done.
+Total 62 (delta 9), reused 0 (delta 0)
+remote: Resolving deltas: 100% (9/9), done.
+remote:
+remote: Create a pull request for 'scaffolding' on GitHub by visiting:
+remote:      https://github.com/feroliv4z/test-ed2/pull/new/scaffolding
+remote:
+To https://github.com/feroliv4z/test-ed2.git
+ * [new branch]      scaffolding -> scaffolding
+Branch 'scaffolding' set up to track remote branch 'scaffolding' from 'origin'.
+
+Usuario@DESKTOP-QNE71D6 MINGW64 ~/documents/test-ed2 (scaffolding)
+$ ^C
+
+Usuario@DESKTOP-QNE71D6 MINGW64 ~/documents/test-ed2 (scaffolding)
+$ ^C
+
+Usuario@DESKTOP-QNE71D6 MINGW64 ~/documents/test-ed2 (scaffolding)
+$ ^C
+
+Usuario@DESKTOP-QNE71D6 MINGW64 ~/documents/test-ed2 (scaffolding)
+$ git pull origin master
+remote: Enumerating objects: 1, done.
+remote: Counting objects: 100% (1/1), done.
+remote: Total 1 (delta 0), reused 0 (delta 0), pack-reused 0
+Unpacking objects: 100% (1/1), done.
+From https://github.com/feroliv4z/test-ed2
+ * branch            master     -> FETCH_HEAD
+   9ffa67e..2929e33  master     -> origin/master
+Updating 194a49c..2929e33
+Fast-forward
+
+Usuario@DESKTOP-QNE71D6 MINGW64 ~/documents/test-ed2 (scaffolding)
+$ git push
+Total 0 (delta 0), reused 0 (delta 0)
+To https://github.com/feroliv4z/test-ed2.git
+   194a49c..2929e33  scaffolding -> scaffolding
+
+Usuario@DESKTOP-QNE71D6 MINGW64 ~/documents/test-ed2 (scaffolding)
+$
