@@ -3,14 +3,16 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Web;
 using System.IO;
-using Lab_1_Serie_1_1251518_1229918.Controllers;
+using Lab_1_Serie_1_1251518_1229918.Models;
 namespace Lab_1_Serie_1_1251518_1229918.Models
 {
     public class Arbol
     {
         static string RutaArchivos = "";
-
-       
+        public void recibirRutaArchivo(string ruta)
+        {
+            RutaArchivos = ruta;
+        }
         public NodoArbol raíz;
         int cantidadNodos = 0;
         public Arbol()
@@ -31,10 +33,6 @@ namespace Lab_1_Serie_1_1251518_1229918.Models
         int espaciosUtilizados = 0;
         byte[] buffer = new byte[tamañoBuffer];
         int cantCaracteres = 0;
-        public void recibirRutaArchivo(string ruta)
-        {
-            RutaArchivos = ruta;
-        }
         public void generarArchivoDiccionario(string caracter, string prefijo, Dictionary<char, CantidadChar> dic)
         {
             cantCaracteres++;
@@ -49,7 +47,7 @@ namespace Lab_1_Serie_1_1251518_1229918.Models
                 buffer[espaciosUtilizados] = Convert.ToByte('-');
                 buffer[espaciosUtilizados+1] = Convert.ToByte('-');
                 int conteo = 0;
-                using (var writeStream = new FileStream(RutaArchivos+"\\..\\Files\\archivo.huff", FileMode.OpenOrCreate))
+                using (var writeStream = new FileStream(RutaArchivos + "\\..\\Files\\archivoComprimido.huff", FileMode.OpenOrCreate))
                 {
                     using (var writer = new BinaryWriter(writeStream))
                     {
