@@ -1,0 +1,20 @@
+﻿
+@{
+    ViewBag.Title = "Descargar Archivo";
+}
+
+<h2>El archivo se proceso correctamente</h2>
+
+<body>
+    <p>Por favor, presione el nombre del archivo para inicial la descarga.</p>
+    <div>
+        @foreach (var item in ViewData.Model)
+        {
+            @Html.ActionLink((string)item, "DownloadFile", new { filename = item });
+        }
+    </div>
+
+    <form action="~/CompresorHuffman/index">
+        <input id="volver" type="submit" value="Volver A Página Principal" />
+    </form>
+</body>

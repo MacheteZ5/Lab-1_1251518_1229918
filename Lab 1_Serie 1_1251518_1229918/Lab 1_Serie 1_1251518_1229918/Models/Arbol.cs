@@ -3,11 +3,16 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Web;
 using System.IO;
-
+using Lab_1_Serie_1_1251518_1229918.Models;
 namespace Lab_1_Serie_1_1251518_1229918.Models
 {
     public class Arbol
     {
+        static string RutaArchivos = "";
+        public void recibirRutaArchivo(string ruta)
+        {
+            RutaArchivos = ruta;
+        }
         public NodoArbol raíz;
         int cantidadNodos = 0;
         public Arbol()
@@ -24,40 +29,60 @@ namespace Lab_1_Serie_1_1251518_1229918.Models
             return raíz;
         }
         //Método para escribir el caracter  su codigo prefijo en un archivo .huff
-        const int tamañoBuffer = 1048;
+
+        const int tamañoBuffer = 100000;
+
         int espaciosUtilizados = 0;
         byte[] buffer = new byte[tamañoBuffer];
         int cantCaracteres = 0;
-        public void generarArchivoDiccionario(string caracter, string prefijo)
+        public void generarArchivoDiccionario(string caracter, string prefijo, Dictionary<char, CantidadChar> dic)
         {
             cantCaracteres++;
             string linea = $"{caracter}|{prefijo}";
-            while (buffer.Length >= espaciosUtilizados && espaciosUtilizados != tamañoBuffer)
+            for (int i = 0; i < linea.Length; i++)
             {
-                if (tamañoBuffer - espaciosUtilizados > linea.Length)
-                {
-                    for (int i = 0; i < linea.Length; i++)
-                    {
-                        buffer[espaciosUtilizados] = Convert.ToByte(linea[i]);
-                        espaciosUtilizados++;
-
-                    }
-                    break;
-                }
-                break;
+                buffer[espaciosUtilizados] = Convert.ToByte(linea[i]);
+                espaciosUtilizados++;
             }
-
-            if (cantCaracteres == cantidadNodos || cantCaracteres == tamañoBuffer || tamañoBuffer - espaciosUtilizados < linea.Length)
+            if (cantCaracteres ==dic.Count())
             {
-                using (var writeStream = new FileStream("C:\\Users\\usuario\\Desktop\\nuevaprueba.huff", FileMode.OpenOrCreate))
+
+                buffer[espaciosUtilizados] = Convert.ToByte('-');
+                buffer[espaciosUtilizados+1] = Convert.ToByte('-');
+                int conteo = 0;
+                using (var writeStream = new FileStream(RutaArchivos + "\\..\\Files\\archivoComprimido.huff", FileMode.OpenOrCreate))
                 {
-                    //public virtual long Seek(int offset, System.IO.SeekOrigin origin);
                     using (var writer = new BinaryWriter(writeStream))
                     {
 
-                        writer.Seek(1, SeekOrigin.End);
-                        writer.Write(buffer);
-                        
+                        for (int j = 0; j < buffer.Count(); j++)
+                        {
+                            if(j == espaciosUtilizados)
+                            {
+                                writer.Write("\r\n");
+                                writer.Write(buffer[j]);
+                                writer.Write(buffer[j+1]);
+                                writer.Write("\r\n");
+                                break;
+                            }
+                            if (buffer[j + 1] == 124)
+                            {
+                                if (conteo != 0)
+                                {
+                                    writer.Write("\r\n");
+                                    writer.Write(buffer[j]);
+                                }
+                                else
+                                {
+                                    writer.Write(buffer[j]);
+                                    conteo++;
+                                }
+                            }
+                            else
+                            {
+                                writer.Write(buffer[j]);
+                            }
+                        }
                     }
                 }
             }
@@ -80,28 +105,16 @@ namespace Lab_1_Serie_1_1251518_1229918.Models
                     {
                         CantidadChar cantidad = new CantidadChar();
                         cantidad.codPref = códigoprefíjo;
-                        //se envian los valores y llaves al diccionario para generar la tabla de prefíjos
                         dic.Remove(Convert.ToChar(raíz.caracter));
                         dic.Add(Convert.ToChar(raíz.caracter), cantidad);
                         cantidadNodos++;
-                        generarArchivoDiccionario(raíz.caracter, códigoprefíjo);
+                        generarArchivoDiccionario(raíz.caracter, códigoprefíjo, dic);
                     }
                 }
                 dic = códigosPrefíjo(raíz.hijoDerecho, dic, códigoprefíjo+1);
             }
             return dic;
         }
-        public void generarArchivoASCII(string prefíjo)
-        {
-            Byte DECABYTE;
-            char DECAASCII;
-            var pref = prefíjo;
-            decimal x = Convert.ToInt32(pref,2);
-            DECABYTE = Convert.ToByte(x);
-            DECAASCII = Convert.ToChar(DECABYTE);
-
-            
-            
-        }
+        
     }
 }

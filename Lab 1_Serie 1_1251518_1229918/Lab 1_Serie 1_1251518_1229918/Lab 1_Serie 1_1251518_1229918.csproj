@@ -166,9 +166,12 @@
     <Content Include="Views\CompresorHuffman\SeparaciónDelTexto.cshtml" />
     <Content Include="Views\CompresorHuffman\Index.cshtml" />
     <Content Include="Views\CompresorHuffman\LecturaDescompresión.cshtml" />
+    <Content Include="Views\CompresorHuffman\Download.cshtml" />
+    <Content Include="Views\CompresorHuffman\LecturaCompresión.cshtml" />
   </ItemGroup>
   <ItemGroup>
     <Folder Include="App_Data\" />
+    <Folder Include="Files\" />
   </ItemGroup>
   <ItemGroup>
     <Content Include="fonts\glyphicons-halflings-regular.woff2" />
