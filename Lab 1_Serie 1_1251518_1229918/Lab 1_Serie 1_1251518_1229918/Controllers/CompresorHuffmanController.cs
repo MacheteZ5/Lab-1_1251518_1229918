@@ -13,6 +13,8 @@ namespace Lab_1_Serie_1_1251518_1229918.Controllers
         //diccionario donde se guardarán las variables como llaves y sus cantidades de aparición como los valores
         static Dictionary<char, CantidadChar> diccionario = new Dictionary<char, CantidadChar>();
         static string RutaArchivos = "";
+        static string ArchivoLeido = "";
+
         static List<byte> ListaByte = new List<byte>();
         //largo del buffer al momento de la lectura
         const int bufferLengt = 1000;
@@ -23,7 +25,6 @@ namespace Lab_1_Serie_1_1251518_1229918.Controllers
             if (postedFile != null)
             {
                 string rutaDirectorioUsuario = Server.MapPath("");
-                string ArchivoLeido = string.Empty;
 
                 //se toma la ruta y nombre del archivo
                 ArchivoLeido = rutaDirectorioUsuario + Path.GetFileName(postedFile.FileName);
@@ -294,14 +295,25 @@ namespace Lab_1_Serie_1_1251518_1229918.Controllers
             }
            return RedirectToAction("Download");
         }
-        public void RazonFactor()
+        public ActionResult RazonFactor()
         {
-            using (var stream = new FileStream(RutaArchivos + "\\..\\Files\\archivoComprimido.huff", FileMode.Open))
+            long tamañoOriginal = new System.IO.FileInfo(ArchivoLeido).Length;
+            long tamañoComprimido = new System.IO.FileInfo(RutaArchivos + "\\..\\Files\\archivoComprimido.huff").Length;
+            long tamañoDescomprimido = new System.IO.FileInfo(RutaArchivos + "\\..\\Files\\archivoDescomprimido.huff").Length;
+
+
+            double razon = Convert.ToInt32(tamañoOriginal) / Convert.ToInt32(tamañoComprimido);
+            double factor = Convert.ToInt32(tamañoComprimido) / Convert.ToInt32(tamañoOriginal);
+            double porcentaje = Convert.ToInt32(tamañoDescomprimido) / Convert.ToInt32(tamañoComprimido);
+
+            using (StreamWriter datos = new StreamWriter(RutaArchivos + "\\..\\Files\\DatosCompresión.txt"))
             {
-                using (var reader = new BinaryReader(stream))
-                {
-                }
+                datos.WriteLine("La razón de compresión es: " + Convert.ToString( razon));
+                datos.WriteLine("El factor de compresión es: " + Convert.ToString(factor));
+                datos.WriteLine("El porcentaje de compresión es: " + Convert.ToString(porcentaje));
             }
+
+            return RedirectToAction("Download");
         }
 
         //Método de descompresión
@@ -494,7 +506,7 @@ namespace Lab_1_Serie_1_1251518_1229918.Controllers
                     }                    
                 }
             }
-            return View("Download");
+            return RedirectToAction("RazonFactor");
         }
     }
 }
