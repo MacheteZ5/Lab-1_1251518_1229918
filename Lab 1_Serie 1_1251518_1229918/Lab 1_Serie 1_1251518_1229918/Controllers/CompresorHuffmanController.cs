@@ -19,6 +19,7 @@ namespace Lab_1_Serie_1_1251518_1229918.Controllers
         [HttpPost]
         public ActionResult LecturaCompresión(HttpPostedFileBase postedFile)
         {
+
             //el siguiente if permite seleccionar un archivo en específico
             if (postedFile != null)
             {
@@ -38,6 +39,26 @@ namespace Lab_1_Serie_1_1251518_1229918.Controllers
                 using (var stream = new FileStream(ArchivoLeido, FileMode.Open))
                 {
                     //te va a devolver un numero cualquiera
+            string ArchivoLeido = string.Empty;
+            //el siguiente if permite seleccionar un archivo en específico
+            if (postedFile != null)
+            {
+                string ruta = Server.MapPath("~/Archivos/");
+                if (!Directory.Exists(ruta))
+                {
+                    Directory.CreateDirectory(ruta);
+                }
+                //se toma la ruta y nombre del archivo
+                ArchivoLeido = ruta + Path.GetFileName(postedFile.FileName);
+                // se añade la extensión del archivo
+                string extension = Path.GetExtension(postedFile.FileName);
+                postedFile.SaveAs(ArchivoLeido);
+
+                using (var stream = new FileStream(ArchivoLeido, FileMode.Open))
+                { 
+
+                //te va a devolver un numero cualquiera
+
                     using (var reader = new BinaryReader(stream))
                     {
                         var byteBuffer = new byte[bufferLengt];
@@ -46,8 +67,20 @@ namespace Lab_1_Serie_1_1251518_1229918.Controllers
                             byteBuffer = reader.ReadBytes(bufferLengt);
                             foreach (byte bit in byteBuffer)
                             {
+
                                 CantidadChar cantidad = new CantidadChar();
                                 if (diccionario.Count == 0)
+
+                                 CantidadChar cantidad = new CantidadChar();
+                                if (diccionario.Count == 0)
+                                {
+                                   cantidad.cantidad = 1;
+                                   diccionario.Add((char)bit, cantidad);
+                                 }
+                                else
+                                 {
+                                if (diccionario.ContainsKey((char)bit))
+
                                 {
                                     cantidad.cantidad = 1;
                                     diccionario.Add((char)bit, cantidad);
@@ -70,9 +103,15 @@ namespace Lab_1_Serie_1_1251518_1229918.Controllers
                                 ListaByte.Add(bit);
                                 caracterestotales++;
                             }
+
+
+                                   ListaByte.Add(bit);
+                                caracterestotales++;
+                            }
                         }
                     }
                 }
+
             }
             return RedirectToAction("SeparaciónDelTexto");
 
