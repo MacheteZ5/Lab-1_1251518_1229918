@@ -29,7 +29,6 @@ namespace Lab_1_Serie_1_1251518_1229918.Models
             return raíz;
         }
         //Método para escribir el caracter  su codigo prefijo en un archivo .huff
-
         const int tamañoBuffer = 100000;
         int espaciosUtilizados = 0;
         byte[] buffer = new byte[tamañoBuffer];
@@ -43,10 +42,10 @@ namespace Lab_1_Serie_1_1251518_1229918.Models
                 buffer[espaciosUtilizados] = Convert.ToByte(linea[i]);
                 espaciosUtilizados++;
             }
-            if (cantCaracteres ==dic.Count())
+            if (cantCaracteres == dic.Count())
             {
                 buffer[espaciosUtilizados] = Convert.ToByte('-');
-                buffer[espaciosUtilizados+1] = Convert.ToByte('-');
+                buffer[espaciosUtilizados + 1] = Convert.ToByte('-');
                 int conteo = 0;
                 using (var writeStream = new FileStream(RutaArchivos + "\\..\\Files\\archivoComprimido.huff", FileMode.OpenOrCreate))
                 {
@@ -54,11 +53,11 @@ namespace Lab_1_Serie_1_1251518_1229918.Models
                     {
                         for (int j = 0; j < buffer.Count(); j++)
                         {
-                            if(j == espaciosUtilizados)
+                            if (j == espaciosUtilizados)
                             {
                                 writer.Write("\r\n");
                                 writer.Write(buffer[j]);
-                                writer.Write(buffer[j+1]);
+                                writer.Write(buffer[j + 1]);
                                 writer.Write("\r\n");
                                 break;
                             }
@@ -83,13 +82,8 @@ namespace Lab_1_Serie_1_1251518_1229918.Models
                     }
                 }
             }
-
-            buffer = new byte[tamañoBuffer];
-            espaciosUtilizados = 0;
         }
-        //códigos prefíjo recorridos del árbol
-        }
-        public Dictionary<char, CantidadChar> códigosPrefíjo(NodoArbol raíz, Dictionary<char, CantidadChar>dic, string códigoprefíjo)
+        public Dictionary<char, CantidadChar> códigosPrefíjo(NodoArbol raíz, Dictionary<char, CantidadChar> dic, string códigoprefíjo)
         {
             if (raíz == null)
             {
@@ -97,7 +91,7 @@ namespace Lab_1_Serie_1_1251518_1229918.Models
             }
             else
             {
-                dic = códigosPrefíjo(raíz.hijoIzquierdo, dic, códigoprefíjo+0);
+                dic = códigosPrefíjo(raíz.hijoIzquierdo, dic, códigoprefíjo + 0);
                 if (raíz.hijoDerecho == null && raíz.hijoIzquierdo == null)
                 {
                     if (dic.ContainsKey(Convert.ToChar(raíz.caracter)))
@@ -110,10 +104,10 @@ namespace Lab_1_Serie_1_1251518_1229918.Models
                         generarArchivoDiccionario(raíz.caracter, códigoprefíjo, dic);
                     }
                 }
-                dic = códigosPrefíjo(raíz.hijoDerecho, dic, códigoprefíjo+1);
+                dic = códigosPrefíjo(raíz.hijoDerecho, dic, códigoprefíjo + 1);
             }
             return dic;
         }
-        
+
     }
 }
