@@ -12,54 +12,94 @@ namespace Lab_1_Serie_1_1251518_1229918.Controllers
     {
         //diccionario donde se guardarán las variables como llaves y sus cantidades de aparición como los valores
         static Dictionary<char, CantidadChar> diccionario = new Dictionary<char, CantidadChar>();
+        static string RutaArchivos = "";
         static List<byte> ListaByte = new List<byte>();
+        //largo del buffer al momento de la lectura
         const int bufferLengt = 1000;
-
-        //lectura del archivo
         [HttpPost]
-        //el siguiente ActionResult permite guardar el texto del archivo en un string 
-        public ActionResult Index(HttpPostedFileBase postedFile)
+        public ActionResult LecturaCompresión(HttpPostedFileBase postedFile)
         {
-            using (var stream = new FileStream(postedFile.FileName, FileMode.Open))
+            //el siguiente if permite seleccionar un archivo en específico
+            if (postedFile != null)
             {
-                //te va a devolver un numero cualquiera
-                using (var reader = new BinaryReader(stream))
+                string rutaDirectorioUsuario = Server.MapPath("");
+                string ArchivoLeido = string.Empty;
+
+                //se toma la ruta y nombre del archivo
+                ArchivoLeido = rutaDirectorioUsuario + Path.GetFileName(postedFile.FileName);
+                // se añade la extensión del archivo
+                string extension = Path.GetExtension(postedFile.FileName);
+                RutaArchivos = rutaDirectorioUsuario;
+                Arbol send = new Arbol();
+                send.recibirRutaArchivo(RutaArchivos);
+                postedFile.SaveAs(ArchivoLeido);
+
+
+                using (var stream = new FileStream(ArchivoLeido, FileMode.Open))
                 {
-                    var byteBuffer = new byte[bufferLengt];
-                    while (reader.BaseStream.Position != reader.BaseStream.Length)
+                    //te va a devolver un numero cualquiera
+                    using (var reader = new BinaryReader(stream))
                     {
-                        byteBuffer = reader.ReadBytes(bufferLengt);
-                        foreach (byte bit in byteBuffer)
+                        var byteBuffer = new byte[bufferLengt];
+                        while (reader.BaseStream.Position != reader.BaseStream.Length)
                         {
-                            CantidadChar cantidad = new CantidadChar();
-                            if (diccionario.Count == 0)
+                            byteBuffer = reader.ReadBytes(bufferLengt);
+                            foreach (byte bit in byteBuffer)
                             {
-                                cantidad.cantidad = 1;
-                                diccionario.Add((char)bit, cantidad);
-                            }
-                            else
-                            {
-                                if (diccionario.ContainsKey((char)bit))
-                                {
-                                    CantidadChar numero = GetAnyValue<int>(bit);
-                                    diccionario.Remove((char)bit);
-                                    cantidad.cantidad = numero.cantidad + 1;
-                                    diccionario.Add((char)bit, cantidad);
-                                }
-                                else
+                                CantidadChar cantidad = new CantidadChar();
+                                if (diccionario.Count == 0)
                                 {
                                     cantidad.cantidad = 1;
                                     diccionario.Add((char)bit, cantidad);
                                 }
+                                else
+                                {
+                                    if (diccionario.ContainsKey((char)bit))
+                                    {
+                                        CantidadChar numero = GetAnyValue<int>(bit);
+                                        diccionario.Remove((char)bit);
+                                        cantidad.cantidad = numero.cantidad + 1;
+                                        diccionario.Add((char)bit, cantidad);
+                                    }
+                                    else
+                                    {
+                                        cantidad.cantidad = 1;
+                                        diccionario.Add((char)bit, cantidad);
+                                    }
+                                }
+                                ListaByte.Add(bit);
+                                caracterestotales++;
                             }
-                            ListaByte.Add(bit);
-                            caracterestotales++;
                         }
                     }
                 }
             }
             return RedirectToAction("SeparaciónDelTexto");
+
         }
+        public ActionResult LecturaCompresión()
+        {
+            return View();
+        }
+
+        public ActionResult Download()
+        {
+            string path = Server.MapPath("~/Files/");
+            DirectoryInfo dirInfo = new DirectoryInfo(path);
+            FileInfo[] files = dirInfo.GetFiles(".");
+            List<string> lista = new List<string>(files.Length);
+            foreach (var item in files)
+            {
+                lista.Add(item.Name);
+            }
+            return View(lista);
+        }
+        public ActionResult DownloadFile(string filename)
+        {
+            string fullPath = Path.Combine(Server.MapPath("~/Files/"), filename);
+            return File(fullPath, System.Net.Mime.MediaTypeNames.Application.Octet, filename);
+        }
+
         private static CantidadChar GetAnyValue<T>(byte Key)
         {
             CantidadChar obj;
@@ -100,7 +140,6 @@ namespace Lab_1_Serie_1_1251518_1229918.Controllers
             lista.Sort();
             return RedirectToAction("Arbol");
         }
-
         public ActionResult Arbol()
         {
             //creación del árbol
@@ -193,10 +232,8 @@ namespace Lab_1_Serie_1_1251518_1229918.Controllers
             string prefíjo = "";
             diccionario = Arbol.códigosPrefíjo(Arbol.raíz, diccionario, prefíjo);
 
-
-
             //Escritura del compresor códigos prefíjos convertidos a bytes
-            using (var writeStream = new FileStream("C:\\Users\\mache\\Desktop\\nuevaprueba.huff", FileMode.Open))
+            using (var writeStream = new FileStream(RutaArchivos + "\\..\\Files\\archivoComprimido.huff", FileMode.Open))
             {
                 using (var writer = new BinaryWriter(writeStream))
                 {
@@ -230,7 +267,7 @@ namespace Lab_1_Serie_1_1251518_1229918.Controllers
                         {
                             binario = binario + car;
                         }
-                        if (cantidadbuffer== 500)
+                        if (cantidadbuffer == 500)
                         {
                             writer.Seek(0, SeekOrigin.End);
                             writer.Write(bytebuffer);
@@ -255,13 +292,8 @@ namespace Lab_1_Serie_1_1251518_1229918.Controllers
 
                 }
             }
-            return View();
+           return RedirectToAction("Download");
         }
-
-
-
-
-
         //Método de descompresión
         //Lectura del archivo e introducir los códigos prefijos con sus respectivos caracteres al diccionario 
         static List<byte> ASCII = new List<byte>();
@@ -317,6 +349,15 @@ namespace Lab_1_Serie_1_1251518_1229918.Controllers
                                             CantidadChar prefijo = new CantidadChar();
                                             prefijo.codPref = prefijos;
                                             i++;
+                                            if (prefijo.codPref[0] == '|')
+                                            {
+                                                string prueba = "";
+                                                for(int j = 1; j < prefijo.codPref.Count(); j++)
+                                                {
+                                                    prueba = prueba + prefijo.codPref[j];
+                                                }
+                                                prefijo.codPref = prueba;
+                                            }
                                             diccionario.Add(caracter, prefijo);
                                             encontrado = false;
                                             prefijos = "";
@@ -330,7 +371,7 @@ namespace Lab_1_Serie_1_1251518_1229918.Controllers
                                         conteo0++;
                                     }
                                     ASCII.Add(byteBuffer[i]);
-                                    if (conteo0 == 100)
+                                    if (conteo0 == 75)
                                     {
                                         demasiado = true;
                                     }
@@ -392,7 +433,6 @@ namespace Lab_1_Serie_1_1251518_1229918.Controllers
         {
             string binario = "";
             string texto = "";
-            //string clave = "";
             CantidadChar valor = new CantidadChar();
             foreach (byte bit in ASCII)
             {
@@ -413,7 +453,7 @@ namespace Lab_1_Serie_1_1251518_1229918.Controllers
                     }
                 }
             }
-            using (var writeStream = new FileStream("C:\\Users\\mache\\Desktop\\nuevaprueba2.huff", FileMode.OpenOrCreate))
+            using (var writeStream = new FileStream(RutaArchivos + "\\..\\Files\\archivoDescomprimido.huff", FileMode.OpenOrCreate))
             {
                 using (var writer = new BinaryWriter(writeStream))
                 {
