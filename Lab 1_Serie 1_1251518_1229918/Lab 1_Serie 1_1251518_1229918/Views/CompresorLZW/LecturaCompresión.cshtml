@@ -1,7 +1,6 @@
 ﻿<!DOCTYPE html>
 <html>
 <style>
-
     #archivo {
         background-color: #003366;
         border: none;
@@ -41,19 +40,22 @@
         margin-left: -15em;
     }
 </style>
+
 <body>
     <div id="titulo">
         <center>
-            <h1>Compresión Huffman.</h1>
+            <h1>Por favor, seleccione el archivo que desea comprimir.</h1>
         </center>
     </div>
     <div id="carga">
         <center>
-            <form action="~/CompresorHuffman/LecturaCompresión">
-                <input id="comprimir" type="submit" value="Comprimir" />
-            </form>
-            <form action="~/CompresorHuffman/LecturaDescompresión">
-                <input id="archivo" type="submit" value="Descomprimir" />
+            @using (Html.BeginForm("LecturaCompresión", "CompresorLZW", FormMethod.Post, new { enctype = "multipart/form-data" }))
+            {
+                <input id="archivo" type="file" name="postedFile" />
+                <input id="archivo" type="submit" value="Comprimir Archivo" />
+            }
+            <form action="~/CompresorHuffman/index">
+                <input id="archivo" type="submit" value="Volver A Página Principal" />
             </form>
         </center>
     </div>
