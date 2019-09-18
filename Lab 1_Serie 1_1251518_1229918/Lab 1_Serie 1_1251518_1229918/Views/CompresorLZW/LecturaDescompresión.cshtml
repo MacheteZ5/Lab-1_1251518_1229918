@@ -49,15 +49,16 @@
     </div>
     <div id="carga">
         <center>
-            @using (Html.BeginForm("LecturaDescompresión", "CompresorHuffman", FormMethod.Post, new { enctype = "multipart/form-data" }))
+            @using (Html.BeginForm("LecturaDescompresión", "CompresorLZW", FormMethod.Post, new { enctype = "multipart/form-data" }))
             {
                 <input id="archivo" type="file" name="postedFile" />
-                <input id="archivo" type="submit" value="Cargar Archivo" />
+                <input id="archivo" type="submit" value="Descomprimir Archivo" />
             }
-            <form action="LecturaDescompresión" method="post">
-                <input id="descomprimir" type="submit" name="enviar" value="Descomprimir" />
+            <form action="~/CompresorHuffman/index">
+                <input id="archivo" type="submit" value="Volver A Página Principal" />
             </form>
+
         </center>
     </div>
 </body>
-</html>s
+</html>
