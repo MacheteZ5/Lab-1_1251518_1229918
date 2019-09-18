@@ -1,9 +1,13 @@
 ﻿using System;
 using System.Collections.Generic;
+
 using System.IO;
+
+
 using System.Linq;
 using System.Web;
 using System.Web.Mvc;
+
 
 namespace Lab_1_Serie_1_1251518_1229918.Controllers
 {
@@ -11,10 +15,17 @@ namespace Lab_1_Serie_1_1251518_1229918.Controllers
     {
         const int bufferLengt = 1000;
 
+
+namespace Lab1_FernandoOliva_1251518.Controllers
+{
+    public class HomeController : Controller
+    {
+
         public ActionResult Index()
         {
             return View();
         }
+
         public ActionResult LecturaCompresión(HttpPostedFileBase postedFile)
         {
             //el siguiente if permite seleccionar un archivo en específico
@@ -53,3 +64,21 @@ namespace Lab_1_Serie_1_1251518_1229918.Controllers
 
     }
 }
+
+
+        public ActionResult About()
+        {
+            ViewBag.Message = "Your application description page.";
+
+            return View();
+        }
+
+        public ActionResult Contact()
+        {
+            ViewBag.Message = "Your contact page.";
+
+            return View();
+        }
+    }
+}
+
