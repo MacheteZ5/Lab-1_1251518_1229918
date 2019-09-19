@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
+using System.Text;
 using System.Web;
 using System.Web.Mvc;
 using System.Web.Routing;
@@ -10,13 +11,16 @@ namespace Lab_1_Serie_1_1251518_1229918.Controllers
 {
     public class CompresorLZWController : Controller
     {
+        
+        static Dictionary<string, int> diccionario = new Dictionary<string, int>();
+        static int ContadorElementosDiccionario = 0;
         const int bufferLengt = 1000;
+        static string RutaArchivos = string.Empty;
         public ActionResult Index()
         {
             return View();
         }
-        static Dictionary<string, int> diccionario = new Dictionary<string, int>();
-        static int i = 0;
+        
         public ActionResult LecturaCompresión()
         {
             return View();
@@ -33,6 +37,7 @@ namespace Lab_1_Serie_1_1251518_1229918.Controllers
                 ArchivoLeido = rutaDirectorioUsuario + Path.GetFileName(postedFile.FileName);
                 // se añade la extensión del archivo
                 string extension = Path.GetExtension(postedFile.FileName);
+                RutaArchivos = rutaDirectorioUsuario;
                 postedFile.SaveAs(ArchivoLeido);
                 using (var stream = new FileStream(ArchivoLeido, FileMode.Open))
                 {
@@ -50,15 +55,37 @@ namespace Lab_1_Serie_1_1251518_1229918.Controllers
                                 llave += (char)bit;
                                 if (!diccionario.ContainsKey(llave))
                                 {
-                                    diccionario.Add(llave, i);
-                                    i++;
+                                    diccionario.Add(llave, ContadorElementosDiccionario);
+                                    ContadorElementosDiccionario++;
                                 }
                             }
+                            //se escribe el diccionario original en el archivo
+                            EscribirDiccionarioArchivo();
                         }
                     }
                 }
             }
             return RedirectToAction("MétodoLZW", new RouteValueDictionary(new { Controller = "CompresorLZW", Action = "MétodoLZW", ArchivoLeido = ArchivoLeido }));
+        }
+        //metodo para escribir el diccionario original en el archivo 
+        public void EscribirDiccionarioArchivo()
+        {
+            using (var writeStream = new FileStream(RutaArchivos + "\\..\\Files\\archivoComprimido.lzw", FileMode.OpenOrCreate))
+            {
+                using (var writer = new BinaryWriter(writeStream))
+                {
+                    foreach (var elemento in diccionario)
+                    {
+                       
+                        writer.Write(elemento.Key + "|" + elemento.Value + "\r\n");
+
+                    }
+                   
+                }
+            }
+
+                
+
         }
         public ActionResult MétodoLZW(string ArchivoLeido)
         {
@@ -77,10 +104,10 @@ namespace Lab_1_Serie_1_1251518_1229918.Controllers
                             llave = llave + (char)bit;
                             if (!diccionario.ContainsKey(llave))
                             {
-                                diccionario.Add(llave, i);
+                                diccionario.Add(llave, ContadorElementosDiccionario);
                                 llave = string.Empty;
                                 llave += (char)bit;
-                                i++;
+                                ContadorElementosDiccionario++;
                             }
                         }
                     }
