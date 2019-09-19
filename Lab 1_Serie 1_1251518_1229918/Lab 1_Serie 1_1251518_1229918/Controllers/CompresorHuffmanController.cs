@@ -13,7 +13,6 @@ namespace Lab_1_Serie_1_1251518_1229918.Controllers
         //diccionario donde se guardarán las variables como llaves y sus cantidades de aparición como los valores
         static Dictionary<char, CantidadChar> diccionario = new Dictionary<char, CantidadChar>();
         static string RutaArchivos = "";
-        static string ArchivoLeido = "";
         static List<byte> ListaByte = new List<byte>();
         //largo del buffer al momento de la lectura
         const int bufferLengt = 1000;
@@ -76,15 +75,11 @@ namespace Lab_1_Serie_1_1251518_1229918.Controllers
                 }
             }
             return RedirectToAction("SeparaciónDelTexto");
-
         }
-
-        
         public ActionResult LecturaCompresión()
         {
             return View();
         }
-
         public ActionResult Download()
         {
             string path = Server.MapPath("~/Files/");
@@ -289,6 +284,38 @@ namespace Lab_1_Serie_1_1251518_1229918.Controllers
                         decimal x = Convert.ToInt32(pref, 2);
                         DECABYTE = Convert.ToByte(x);
                         bytebuffer[cantidadbuffer] = DECABYTE;
+                        int contador0 = 0;
+                        List<byte> ListAux = new List<byte>();
+                        foreach (byte bit in bytebuffer)
+                        {
+                            if (bit == 0)
+                            {
+                                contador0++;
+                            }
+                            else
+                            {
+                                contador0 = 0;
+                            }
+                            if (contador0 != 10)
+                            {
+                                ListAux.Add(bit);
+                            }
+                            else
+                            {
+                                for (int i = 0; i < 9; i++)
+                                {
+                                    ListAux.Remove(ListAux.Last());
+                                }
+                                break;
+                            }
+                        }
+                        bytebuffer = new byte[ListAux.Count()];
+                        int j = 0;
+                        foreach (byte bit in ListAux)
+                        {
+                            bytebuffer[j] = bit;
+                            j++;
+                        }
                         writer.Seek(0, SeekOrigin.End);
                         writer.Write(bytebuffer);
                     }
@@ -308,89 +335,67 @@ namespace Lab_1_Serie_1_1251518_1229918.Controllers
             {
                 using (var reader = new BinaryReader(stream))
                 {
-                    int conteo0 = 0;
-                    string prefijos = "";
+                    string prefijos = string.Empty;
                     char caracter = ' ';
-                    bool encontrado = false;
                     byte[] byteBuffer = new byte[10000];
+                    bool encontrado = false;
                     bool separador = false;
-                    bool demasiado = false;
                     while (reader.BaseStream.Position != reader.BaseStream.Length)
                     {
                         byteBuffer = reader.ReadBytes(10000);
-                        if (demasiado == false)
+                        for (int i = 0; i < byteBuffer.Count(); i++)
                         {
-                            for (int i = 0; i < byteBuffer.Count(); i++)
+                            if (separador != true)
                             {
-                                if (separador != true)
+                                if ((byteBuffer[i] == 45))
                                 {
-                                    if (byteBuffer[i] == 45)
+                                    if ((byteBuffer[i + 1] == 45))
                                     {
-                                        if (byteBuffer[i + 1] == 45)
-                                        {
-                                            separador = true;
-                                            i = i + 2;
-                                        }
+                                        separador = true;
+                                        i = i + 2;
                                     }
-                                    if (encontrado == false)
+                                }
+                                if (encontrado == false)
+                                {
+                                    if (byteBuffer[i + 1] == 124)
                                     {
-                                        if (byteBuffer[i + 1] == 124)
-                                        {
-                                            caracter = (char)byteBuffer[i];
-                                            encontrado = true;
-                                            i++;
-                                        }
-                                    }
-                                    else
-                                    {
-                                        if ((byteBuffer[i] != 13) && (byteBuffer[i] != 2))
-                                        {
-                                            prefijos = prefijos + (char)byteBuffer[i];
-                                        }
-                                        else
-                                        {
-                                            CantidadChar prefijo = new CantidadChar();
-                                            prefijo.codPref = prefijos;
-                                            i++;
-                                            if (prefijo.codPref[0] == '|')
-                                            {
-                                                string prueba = "";
-                                                for (int j = 1; j < prefijo.codPref.Count(); j++)
-                                                {
-                                                    prueba = prueba + prefijo.codPref[j];
-                                                }
-                                                prefijo.codPref = prueba;
-                                            }
-                                            diccionario.Add(caracter, prefijo);
-                                            encontrado = false;
-                                            prefijos = "";
-                                        }
+                                        caracter = (char)byteBuffer[i];
+                                        encontrado = true;
+                                        i++;
                                     }
                                 }
                                 else
                                 {
-                                    if (byteBuffer[i] == 0)
+                                    if ((byteBuffer[i] != 13) && (byteBuffer[i] != 2))
                                     {
-                                        conteo0++;
+                                        prefijos = prefijos + (char)byteBuffer[i];
                                     }
-                                    ASCII.Add(byteBuffer[i]);
-                                    if (conteo0 == 75)
+                                    else
                                     {
-                                        demasiado = true;
+                                        CantidadChar prefijo = new CantidadChar();
+                                        prefijo.codPref = prefijos;
+                                        i++;
+                                        if (prefijo.codPref[0] == '|')
+                                        {
+                                            string prueba = "";
+                                            for (int j = 1; j < prefijo.codPref.Count(); j++)
+                                            {
+                                                prueba = prueba + prefijo.codPref[j];
+                                            }
+                                            prefijo.codPref = prueba;
+                                        }
+                                        diccionario.Add(caracter, prefijo);
+                                        encontrado = false;
+                                        prefijos = "";
                                     }
-                                }
-                                if (demasiado == true)
-                                {
-                                    break;
                                 }
                             }
-                        }
-                        else
-                        {
-                            break;
+                            else
+                            {
+                                ASCII.Add(byteBuffer[i]);
+                            }
                         }
                     }
-
                 }
             }
             for (int i = 0; i < 2; i++)
@@ -506,6 +511,47 @@ namespace Lab_1_Serie_1_1251518_1229918.Controllers
                             }
                         }
                     }
+                    if ((byteBufferfinal[0] == 0)&&(byteBufferfinal[1] == 0))
+                    {
+                        // nada porque se aseguró que el buffer esté vacío
+                    }
+                    else
+                    {
+                        int contador0 = 0;
+                        List<byte> ListAux = new List<byte>();
+                        foreach (byte bit in byteBufferfinal)
+                        {
+                            if (bit == 0)
+                            {
+                                contador0++;
+                            }
+                            else
+                            {
+                                contador0 = 0;
+                            }
+                            if (contador0 != 3)
+                            {
+                                ListAux.Add(bit);
+                            }
+                            else
+                            {
+                                for (int i = 0; i < 2; i++)
+                                {
+                                    ListAux.Remove(ListAux.Last());
+                                }
+                                break;
+                            }
+                        }
+                        byteBufferfinal = new byte[ListAux.Count()];
+                        int j = 0;
+                        foreach (byte bite in ListAux)
+                        {
+                            byteBufferfinal[j] = bite;
+                            j++;
+                        }
+                        writer.Seek(0, SeekOrigin.End);
+                        writer.Write(byteBufferfinal);
+                    }
                 }
             }
             return RedirectToAction("RazonFactor");
@@ -513,3 +559,9 @@ namespace Lab_1_Serie_1_1251518_1229918.Controllers
     }
 
 }
+
+
+
+
+
+
