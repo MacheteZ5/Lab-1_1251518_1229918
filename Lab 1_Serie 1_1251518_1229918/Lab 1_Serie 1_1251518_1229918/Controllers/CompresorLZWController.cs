@@ -47,7 +47,7 @@ namespace Lab_1_Serie_1_1251518_1229918.Controllers
                             {
                                 //añadir al diccionario
                                 llave = string.Empty;
-                                llave = llave + (char)bit;
+                                llave += (char)bit;
                                 if (!diccionario.ContainsKey(llave))
                                 {
                                     diccionario.Add(llave, i);
@@ -62,7 +62,7 @@ namespace Lab_1_Serie_1_1251518_1229918.Controllers
         }
         public ActionResult MétodoLZW(string ArchivoLeido)
         {
-            string llave = "";
+            string llave = string.Empty;
             using (var stream = new FileStream(ArchivoLeido, FileMode.Open))
             {
                 using (var reader = new BinaryReader(stream))
@@ -79,7 +79,7 @@ namespace Lab_1_Serie_1_1251518_1229918.Controllers
                             {
                                 diccionario.Add(llave, i);
                                 llave = string.Empty;
-                                llave = llave + (char)bit;
+                                llave += (char)bit;
                                 i++;
                             }
                         }

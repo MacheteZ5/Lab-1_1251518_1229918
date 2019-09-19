@@ -125,8 +125,8 @@
     </Compile>
     <Compile Include="Models\Arbol.cs" />
     <Compile Include="Models\CantidadChar.cs" />
-    <Compile Include="Models\Elementos De La Lista.cs" />
     <Compile Include="Models\NodoArbol.cs" />
+    <Compile Include="Models\TreeElement.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>
   <ItemGroup>

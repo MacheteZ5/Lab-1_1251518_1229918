@@ -12,8 +12,9 @@ namespace Lab_1_Serie_1_1251518_1229918.Controllers
     {
         //diccionario donde se guardarán las variables como llaves y sus cantidades de aparición como los valores
         static Dictionary<char, CantidadChar> diccionario = new Dictionary<char, CantidadChar>();
-        static string RutaArchivos = "";
+        static string RutaArchivos = string.Empty;
         static List<byte> ListaByte = new List<byte>();
+        static List<TreeElement> lista = new List<TreeElement>();
         //largo del buffer al momento de la lectura
         const int bufferLengt = 1000;
         [HttpPost]
@@ -33,8 +34,6 @@ namespace Lab_1_Serie_1_1251518_1229918.Controllers
                 Arbol send = new Arbol();
                 send.recibirRutaArchivo(RutaArchivos);
                 postedFile.SaveAs(ArchivoLeido);
-
-
                 using (var stream = new FileStream(ArchivoLeido, FileMode.Open))
                 {
                     //te va a devolver un numero cualquiera
@@ -47,25 +46,15 @@ namespace Lab_1_Serie_1_1251518_1229918.Controllers
                             foreach (byte bit in byteBuffer)
                             {
                                 CantidadChar cantidad = new CantidadChar();
-                                if (diccionario.Count == 0)
+
+                                if (!diccionario.ContainsKey((char)bit))
                                 {
                                     cantidad.cantidad = 1;
                                     diccionario.Add((char)bit, cantidad);
                                 }
                                 else
                                 {
-                                    if (diccionario.ContainsKey((char)bit))
-                                    {
-                                        CantidadChar numero = GetAnyValue<int>(bit);
-                                        diccionario.Remove((char)bit);
-                                        cantidad.cantidad = numero.cantidad + 1;
-                                        diccionario.Add((char)bit, cantidad);
-                                    }
-                                    else
-                                    {
-                                        cantidad.cantidad = 1;
-                                        diccionario.Add((char)bit, cantidad);
-                                    }
+                                    diccionario[(char)bit].cantidad++;
                                 }
                                 ListaByte.Add(bit);
                                 caracterestotales++;
@@ -117,8 +106,7 @@ namespace Lab_1_Serie_1_1251518_1229918.Controllers
         {
             return View();
         }
-        static List<Elementos_De_La_Lista> lista = new List<Elementos_De_La_Lista>();
-
+        
         //Al momento de haber recibido el string del texto, habrá que separar caracter por caracter
         static int caracterestotales = 0;
         //retorna los valores que contiene la lista
@@ -129,7 +117,7 @@ namespace Lab_1_Serie_1_1251518_1229918.Controllers
             //se introducirán los porcentajes de los caracteres en la tabla
             foreach (var caracter in sorted)
             {
-                Elementos_De_La_Lista elemento = new Elementos_De_La_Lista();
+                TreeElement elemento = new TreeElement();
                 double aux = (Convert.ToDouble(caracter.Value.cantidad));
                 elemento.caracter = caracter.Key;
                 elemento.probabilidad = Convert.ToDouble((aux / caracterestotales));
@@ -140,6 +128,10 @@ namespace Lab_1_Serie_1_1251518_1229918.Controllers
         }
         public ActionResult Arbol()
         {
+            Arbol Auxiliar = new Arbol();
+            NodoArbol Aux = new NodoArbol();
+            NodoArbol izquierdo = new NodoArbol();
+            NodoArbol derecho = new NodoArbol();
             //creación del árbol
             Arbol Arbol = new Arbol();
             int Repeticiones = lista.Count();
@@ -151,10 +143,10 @@ namespace Lab_1_Serie_1_1251518_1229918.Controllers
                 }
                 else
                 {
-                    Arbol Auxiliar = new Arbol();
-                    NodoArbol Aux = new NodoArbol();
-                    NodoArbol izquierdo = new NodoArbol();
-                    NodoArbol derecho = new NodoArbol();
+                    Auxiliar = new Arbol();
+                    Aux = new NodoArbol();
+                    izquierdo = new NodoArbol();
+                    derecho = new NodoArbol();
                     string nombre = "n" + (i + 1);
                     if (lista[0].Aux == null && lista[1].Aux == null)
                     {
@@ -197,7 +189,7 @@ namespace Lab_1_Serie_1_1251518_1229918.Controllers
                     lista.Remove(lista[0]);
                     lista[0] = null;
                     Aux = Auxiliar.ingresar(izquierdo, derecho, nombre);
-                    Elementos_De_La_Lista elemento = new Elementos_De_La_Lista();
+                    TreeElement elemento = new TreeElement();
                     elemento.Aux = Aux;
                     elemento.probabilidad = Aux.probabilidad;
                     if (lista.Count() > 1)
@@ -273,7 +265,7 @@ namespace Lab_1_Serie_1_1251518_1229918.Controllers
                             bytebuffer = new byte[500];
                         }
                     }
-                    if (binario != "")
+                    if (binario != string.Empty)
                     {
                         while (binario.Count() != 8)
                         {
@@ -357,27 +349,25 @@ namespace Lab_1_Serie_1_1251518_1229918.Controllers
                                 }
                                 if (encontrado == false)
                                 {
-                                    if (byteBuffer[i + 1] == 124)
+                                    if (byteBuffer[i] == 124)
                                     {
-                                        caracter = (char)byteBuffer[i];
+                                        caracter = (char)byteBuffer[i-1];
                                         encontrado = true;
-                                        i++;
                                     }
                                 }
                                 else
                                 {
-                                    if ((byteBuffer[i] != 13) && (byteBuffer[i] != 2))
+                                    if ((byteBuffer[i+1] != 124)&&(byteBuffer[i]!=2))
                                     {
-                                        prefijos = prefijos + (char)byteBuffer[i];
+                                        prefijos += (char)byteBuffer[i];
                                     }
                                     else
                                     {
                                         CantidadChar prefijo = new CantidadChar();
                                         prefijo.codPref = prefijos;
-                                        i++;
                                         if (prefijo.codPref[0] == '|')
                                         {
-                                            string prueba = "";
+                                            string prueba = string.Empty;
                                             for (int j = 1; j < prefijo.codPref.Count(); j++)
                                             {
                                                 prueba = prueba + prefijo.codPref[j];
@@ -460,8 +450,8 @@ namespace Lab_1_Serie_1_1251518_1229918.Controllers
 
         public ActionResult GeneraciónDelArchivoOriginal()
         {
-            string binario = "";
-            string texto = "";
+            string binario = string.Empty;
+            string texto = string.Empty;
             CantidadChar valor = new CantidadChar();
             foreach (byte bit in ASCII)
             {
@@ -556,12 +546,7 @@ namespace Lab_1_Serie_1_1251518_1229918.Controllers
             }
             return RedirectToAction("RazonFactor");
         }
+
+        
     }
-
 }
-
-
-
-
-
-

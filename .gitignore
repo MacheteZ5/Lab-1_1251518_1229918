@@ -332,5 +332,4 @@ ASALocalRun/
 
 *.huff
 Archivos/
-packages/
-Pruebagitignore/
+*.txt
