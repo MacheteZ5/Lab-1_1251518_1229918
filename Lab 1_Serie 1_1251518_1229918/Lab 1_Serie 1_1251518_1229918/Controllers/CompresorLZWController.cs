@@ -14,6 +14,7 @@ namespace Lab_1_Serie_1_1251518_1229918.Controllers
         
         static Dictionary<string, int> diccionario = new Dictionary<string, int>();
         static int ContadorElementosDiccionario = 0;
+        static int  CantidadCaracteresArchivo = 0;
         const int bufferLengt = 1000;
         static string RutaArchivos = string.Empty;
         public ActionResult Index()
@@ -39,6 +40,7 @@ namespace Lab_1_Serie_1_1251518_1229918.Controllers
                 string extension = Path.GetExtension(postedFile.FileName);
                 RutaArchivos = rutaDirectorioUsuario;
                 postedFile.SaveAs(ArchivoLeido);
+                
                 using (var stream = new FileStream(ArchivoLeido, FileMode.Open))
                 {
                     using (var reader = new BinaryReader(stream))
@@ -58,6 +60,7 @@ namespace Lab_1_Serie_1_1251518_1229918.Controllers
                                     diccionario.Add(llave, ContadorElementosDiccionario);
                                     ContadorElementosDiccionario++;
                                 }
+                                CantidadCaracteresArchivo++;
                             }
                             //se escribe el diccionario original en el archivo
                             EscribirDiccionarioArchivo();
@@ -74,6 +77,8 @@ namespace Lab_1_Serie_1_1251518_1229918.Controllers
             {
                 using (var writer = new BinaryWriter(writeStream))
                 {
+                    //se escribe la cantidad de caracteres que tiene el archivo que se esta comprimiendo
+                    writer.Write(CantidadCaracteresArchivo + "\r\n");
                     foreach (var elemento in diccionario)
                     {
                        
