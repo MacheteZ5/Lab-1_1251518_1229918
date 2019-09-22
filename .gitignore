@@ -333,3 +333,5 @@ ASALocalRun/
 *.huff
 Archivos/
 *.txt
+*.lzw
+Files/

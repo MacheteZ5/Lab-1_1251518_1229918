@@ -67,5 +67,53 @@ namespace Lab_1_Serie_1_1251518_1229918.Models
                 }
             }
         }
+        public string ConvertToBinary(int numero)
+        {
+            string binario = string.Empty;
+            while (numero!=0)
+            {
+                if ((numero % 2) != 0)
+                {
+                    binario = "1"+binario;
+
+                }
+                else
+                {
+                    binario = "0" + binario;
+                }
+                numero /= 2;
+            }
+            return binario;
+        }
+
+        public bool VerificarConversion(int numerooriginal, string binario)
+        {
+            int Conversor = 0;
+            for(int x =binario.Length-1, y = 0; x >= 0; x--, y++)
+            {
+                if ((binario[x] == '0') || (binario[x] == '1'))
+                {
+                    Conversor += (int)(int.Parse(binario[x].ToString()) * Math.Pow(2, y));
+                }
+            }
+            if (Conversor == numerooriginal)
+            {
+                return true;
+            }
+            else
+            {
+                return false;
+            }
+        }
+
+        public int CuantosBitsSeNecesitan(int numero)
+        {
+            int i = 0;
+            while (Math.Pow(2,i) < numero)
+            {
+                i++;
+            }
+            return i;
+        }
     }
 }
