@@ -1,4 +1,5 @@
-﻿using System;
+﻿using Lab_1_Serie_1_1251518_1229918.Models;
+using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
@@ -14,7 +15,6 @@ namespace Lab_1_Serie_1_1251518_1229918.Controllers
         
         static Dictionary<string, int> diccionario = new Dictionary<string, int>();
         static int ContadorElementosDiccionario = 0;
-        static int  CantidadCaracteresArchivo = 0;
         const int bufferLengt = 1000;
         static string RutaArchivos = string.Empty;
         public ActionResult Index()
@@ -30,6 +30,14 @@ namespace Lab_1_Serie_1_1251518_1229918.Controllers
         public ActionResult LecturaCompresión(HttpPostedFileBase postedFile)
         {
             string ArchivoLeido = string.Empty;
+            //le permite corroborar si la carpeta Files ya existe en la solución
+            bool Exists;
+            string Paths = Server.MapPath("~/Files/");
+            Exists = Directory.Exists(Paths);
+            if (!Exists)
+            {
+                Directory.CreateDirectory(Paths);
+            }
             //el siguiente if permite seleccionar un archivo en específico
             if (postedFile != null)
             {
@@ -37,64 +45,21 @@ namespace Lab_1_Serie_1_1251518_1229918.Controllers
                 //se toma la ruta y nombre del archivo
                 ArchivoLeido = rutaDirectorioUsuario + Path.GetFileName(postedFile.FileName);
                 // se añade la extensión del archivo
-                string extension = Path.GetExtension(postedFile.FileName);
+                //string extension = Path.GetExtension(postedFile.FileName);
                 RutaArchivos = rutaDirectorioUsuario;
                 postedFile.SaveAs(ArchivoLeido);
-                
-                using (var stream = new FileStream(ArchivoLeido, FileMode.Open))
-                {
-                    using (var reader = new BinaryReader(stream))
-                    {
-                        var byteBuffer = new byte[bufferLengt];
-                        while (reader.BaseStream.Position != reader.BaseStream.Length)
-                        {
-                            byteBuffer = reader.ReadBytes(bufferLengt);
-                            string llave = string.Empty;
-                            foreach (byte bit in byteBuffer)
-                            {
-                                //añadir al diccionario
-                                llave = string.Empty;
-                                llave += (char)bit;
-                                if (!diccionario.ContainsKey(llave))
-                                {
-                                    diccionario.Add(llave, ContadorElementosDiccionario);
-                                    ContadorElementosDiccionario++;
-                                }
-                                CantidadCaracteresArchivo++;
-                            }
-                            //se escribe el diccionario original en el archivo
-                            EscribirDiccionarioArchivo();
-                        }
-                    }
-                }
+                LZWCompressor LZWLectura = new LZWCompressor();
+                diccionario = LZWLectura.LecturaArchivo(ArchivoLeido, bufferLengt, diccionario, ContadorElementosDiccionario, RutaArchivos);
+                ContadorElementosDiccionario = diccionario.Count();
             }
-            return RedirectToAction("MétodoLZW", new RouteValueDictionary(new { Controller = "CompresorLZW", Action = "MétodoLZW", ArchivoLeido = ArchivoLeido }));
+            return RedirectToAction("MétodoLZW", new RouteValueDictionary(new { Controller = "CompresorLZW", Action = "MétodoLZW", ArchivoLeido }));
         }
-        //metodo para escribir el diccionario original en el archivo 
-        public void EscribirDiccionarioArchivo()
-        {
-            using (var writeStream = new FileStream(RutaArchivos + "\\..\\Files\\archivoComprimido.lzw", FileMode.OpenOrCreate))
-            {
-                using (var writer = new BinaryWriter(writeStream))
-                {
-                    //se escribe la cantidad de caracteres que tiene el archivo que se esta comprimiendo
-                    writer.Write(CantidadCaracteresArchivo + "\r\n");
-                    foreach (var elemento in diccionario)
-                    {
-                       
-                        writer.Write(elemento.Key + "|" + elemento.Value + "\r\n");
-
-                    }
-                   
-                }
-            }
-
-                
-
-        }
+        
         public ActionResult MétodoLZW(string ArchivoLeido)
         {
-            string llave = string.Empty;
+            var ListaBytesComprimidos = new List<byte>();
+            var previo = string.Empty;
+            var actual = string.Empty;
             using (var stream = new FileStream(ArchivoLeido, FileMode.Open))
             {
                 using (var reader = new BinaryReader(stream))
@@ -106,14 +71,38 @@ namespace Lab_1_Serie_1_1251518_1229918.Controllers
                         foreach (byte bit in byteBuffer)
                         {
                             //añadir al diccionario
-                            llave = llave + (char)bit;
-                            if (!diccionario.ContainsKey(llave))
+                            actual += (char)bit;
+                            if (!diccionario.ContainsKey(actual))
                             {
-                                diccionario.Add(llave, ContadorElementosDiccionario);
-                                llave = string.Empty;
-                                llave += (char)bit;
                                 ContadorElementosDiccionario++;
+                                diccionario.Add(actual, ContadorElementosDiccionario);
+                                actual = string.Empty;
+                                actual += (char)bit;
+                                ListaBytesComprimidos.Add(Convert.ToByte(diccionario[previo]));
+                                previo = string.Empty;
+                                previo += (char)bit;
                             }
+                            else
+                            {
+                                previo += (char)bit;
+                            }
+                        }
+                        if (previo != string.Empty)
+                        {
+                            ListaBytesComprimidos.Add(Convert.ToByte(diccionario[previo]));
+                        }
+                    }
+                    byte[] bytebuffer = new byte[ListaBytesComprimidos.Count()];
+                    for(int i = 0; i < ListaBytesComprimidos.Count(); i++)
+                    {
+                        bytebuffer[i] = ListaBytesComprimidos[i];
+                    }
+                    using (var writeStream = new FileStream(RutaArchivos + "\\..\\Files\\archivoComprimido.lzw", FileMode.Open))
+                    {
+                        using (var writer = new BinaryWriter(writeStream))
+                        {
+                            writer.Seek(0, SeekOrigin.End);
+                            writer.Write(bytebuffer);
                         }
                     }
                 }

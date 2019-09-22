@@ -20,50 +20,30 @@ namespace Lab_1_Serie_1_1251518_1229918.Controllers
         [HttpPost]
         public ActionResult LecturaCompresión(HttpPostedFileBase postedFile)
         {
-            //el siguiente if permite seleccionar un archivo en específico
+            bool Exists;
+            string Paths = Server.MapPath("~/Files/");
+            Exists = Directory.Exists(Paths);
+            if (!Exists)
+            {
+                Directory.CreateDirectory(Paths);
+            }
             if (postedFile != null)
             {
                 string rutaDirectorioUsuario = Server.MapPath("");
-                string ArchivoLeido = string.Empty;
-
                 //se toma la ruta y nombre del archivo
-                ArchivoLeido = rutaDirectorioUsuario + Path.GetFileName(postedFile.FileName);
+                string ArchivoLeido = rutaDirectorioUsuario + Path.GetFileName(postedFile.FileName);
                 // se añade la extensión del archivo
-                string extension = Path.GetExtension(postedFile.FileName);
                 RutaArchivos = rutaDirectorioUsuario;
                 Arbol send = new Arbol();
                 send.recibirRutaArchivo(RutaArchivos);
                 postedFile.SaveAs(ArchivoLeido);
-                using (var stream = new FileStream(ArchivoLeido, FileMode.Open))
-                {
-                    //te va a devolver un numero cualquiera
-                    using (var reader = new BinaryReader(stream))
-                    {
-                        var byteBuffer = new byte[bufferLengt];
-                        while (reader.BaseStream.Position != reader.BaseStream.Length)
-                        {
-                            byteBuffer = reader.ReadBytes(bufferLengt);
-                            foreach (byte bit in byteBuffer)
-                            {
-                                CantidadChar cantidad = new CantidadChar();
-
-                                if (!diccionario.ContainsKey((char)bit))
-                                {
-                                    cantidad.cantidad = 1;
-                                    diccionario.Add((char)bit, cantidad);
-                                }
-                                else
-                                {
-                                    diccionario[(char)bit].cantidad++;
-                                }
-                                ListaByte.Add(bit);
-                                caracterestotales++;
-                            }
-                        }
-                    }
-                }
+                //se aplicó la interfaz y el modelo Huffman
+                //La Listabyte se utilizó una referencia debido a que la función retornará el diccionario
+                Huffman HuffmanProcess = new Huffman();
+                diccionario = HuffmanProcess.LecturaArchivoCompresion(diccionario, ArchivoLeido, bufferLengt, ref ListaByte);
+                lista = HuffmanProcess.OrdenamientoDelDiccionario(diccionario,lista,ListaByte);
             }
-            return RedirectToAction("SeparaciónDelTexto");
+            return RedirectToAction("Arbol");
         }
         public ActionResult LecturaCompresión()
         {
@@ -108,120 +88,14 @@ namespace Lab_1_Serie_1_1251518_1229918.Controllers
         }
         
         //Al momento de haber recibido el string del texto, habrá que separar caracter por caracter
-        static int caracterestotales = 0;
-        //retorna los valores que contiene la lista
-        public ActionResult SeparaciónDelTexto()
-        {
-            //se ordenará por orden ascendente la lista
-            var sorted = from entrada in diccionario orderby entrada.Value ascending select entrada;
-            //se introducirán los porcentajes de los caracteres en la tabla
-            foreach (var caracter in sorted)
-            {
-                TreeElement elemento = new TreeElement();
-                double aux = (Convert.ToDouble(caracter.Value.cantidad));
-                elemento.caracter = caracter.Key;
-                elemento.probabilidad = Convert.ToDouble((aux / caracterestotales));
-                lista.Add(elemento);
-            }
-            lista.Sort();
-            return RedirectToAction("Arbol");
-        }
         public ActionResult Arbol()
         {
-            Arbol Auxiliar = new Arbol();
-            NodoArbol Aux = new NodoArbol();
-            NodoArbol izquierdo = new NodoArbol();
-            NodoArbol derecho = new NodoArbol();
             //creación del árbol
+            Huffman HuffmanProcess = new Huffman();
             Arbol Arbol = new Arbol();
-            int Repeticiones = lista.Count();
-            for (int i = 0; i < Repeticiones; i++)
-            {
-                if (lista.Count < 2)
-                {
-                    break;
-                }
-                else
-                {
-                    Auxiliar = new Arbol();
-                    Aux = new NodoArbol();
-                    izquierdo = new NodoArbol();
-                    derecho = new NodoArbol();
-                    string nombre = "n" + (i + 1);
-                    if (lista[0].Aux == null && lista[1].Aux == null)
-                    {
-                        //hijo izquierdo
-                        izquierdo.caracter = Convert.ToString(lista[0].caracter);
-                        izquierdo.probabilidad = lista[0].probabilidad;
-                        //hijo derecho
-                        derecho.caracter = Convert.ToString(lista[1].caracter);
-                        derecho.probabilidad = lista[1].probabilidad;
-                    }
-                    else
-                    {
-                        if (lista[0].Aux != null && lista[1].Aux == null)
-                        {
-                            //hijo izquierdo
-                            izquierdo = lista[0].Aux;
-                            //hijo derecho
-                            derecho.caracter = Convert.ToString(lista[1].caracter);
-                            derecho.probabilidad = lista[1].probabilidad;
-                        }
-                        else
-                        {
-                            if (lista[0].Aux == null && lista[1].Aux != null)
-                            {
-                                //hijo izquierdo
-                                izquierdo.caracter = Convert.ToString(lista[0].caracter);
-                                izquierdo.probabilidad = lista[0].probabilidad;
-                                //hijo derecho
-                                derecho = lista[1].Aux;
-                            }
-                            else
-                            {
-                                //hijo izquierdo
-                                izquierdo = lista[0].Aux;
-                                //hijo derecho
-                                derecho = lista[1].Aux;
-                            }
-                        }
-                    }
-                    lista.Remove(lista[0]);
-                    lista[0] = null;
-                    Aux = Auxiliar.ingresar(izquierdo, derecho, nombre);
-                    TreeElement elemento = new TreeElement();
-                    elemento.Aux = Aux;
-                    elemento.probabilidad = Aux.probabilidad;
-                    if (lista.Count() > 1)
-                    {
-                        for (int j = 1; j < lista.Count(); j++)
-                        {
-                            if (lista[j].probabilidad > elemento.probabilidad)
-                            {
-                                lista[j - 1] = elemento;
-                                break;
-                            }
-                            else
-                            {
-                                lista[j - 1] = lista[j];
-                                lista[j] = null;
-                                if (lista[lista.Count() - 1] == null)
-                                {
-                                    lista[lista.Count() - 1] = elemento;
-                                }
-                            }
-                        }
-                    }
-                    else
-                    {
-                        lista[0] = elemento;
-                    }
-                }
-            }
-            Arbol.raíz = lista[0].Aux;
-            string prefíjo = "";
+            Arbol.raíz = HuffmanProcess.TreeCreation(lista);
+            string prefíjo = string.Empty;
             diccionario = Arbol.códigosPrefíjo(Arbol.raíz, diccionario, prefíjo);
-
             //Escritura del compresor códigos prefíjos convertidos a bytes
             using (var writeStream = new FileStream(RutaArchivos + "\\..\\Files\\archivoComprimido.huff", FileMode.Open))
             {
@@ -250,7 +124,7 @@ namespace Lab_1_Serie_1_1251518_1229918.Controllers
                             DECABYTE = Convert.ToByte(x);
                             bytebuffer[cantidadbuffer] = DECABYTE;
                             cantidadbuffer++;
-                            binario = "";
+                            binario = string.Empty;
                             binario = binario + car;
                         }
                         else
@@ -320,6 +194,7 @@ namespace Lab_1_Serie_1_1251518_1229918.Controllers
         //Lectura del archivo e introducir los códigos prefijos con sus respectivos caracteres al diccionario 
         static List<byte> ASCII = new List<byte>();
         [HttpPost]
+
         public ActionResult LecturaDescompresión(HttpPostedFileBase postedFile)
         {
             diccionario = new Dictionary<char, CantidadChar>();
@@ -447,7 +322,6 @@ namespace Lab_1_Serie_1_1251518_1229918.Controllers
 
             return RedirectToAction("Download");
         }
-
         public ActionResult GeneraciónDelArchivoOriginal()
         {
             string binario = string.Empty;
@@ -455,19 +329,18 @@ namespace Lab_1_Serie_1_1251518_1229918.Controllers
             CantidadChar valor = new CantidadChar();
             foreach (byte bit in ASCII)
             {
-                binario = "";
+                binario = string.Empty;
                 binario = binario + Convertir(bit, binario);
                 foreach (char car in binario)
                 {
-                    valor.codPref = valor.codPref + car;
+                    valor.codPref =valor.codPref+ car;
                     foreach (char Key in diccionario.Keys)
                     {
                         CantidadChar valor2 = GetAnyValue<CantidadChar>(Convert.ToByte(Key));
                         if (valor.codPref == valor2.codPref)
                         {
                             texto = texto + Key;
-                            //clave = "";
-                            valor = new CantidadChar();
+                            valor.codPref = string.Empty;
                         }
                     }
                 }
@@ -546,7 +419,5 @@ namespace Lab_1_Serie_1_1251518_1229918.Controllers
             }
             return RedirectToAction("RazonFactor");
         }
-
-        
     }
 }
