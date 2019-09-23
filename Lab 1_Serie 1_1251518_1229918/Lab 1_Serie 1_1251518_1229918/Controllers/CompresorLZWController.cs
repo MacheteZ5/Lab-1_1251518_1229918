@@ -143,7 +143,6 @@ namespace Lab_1_Serie_1_1251518_1229918.Controllers
                         {
                             writer.Seek(0,SeekOrigin.Begin);
                             writer.Write(Convert.ToByte(valorCadena));
-                            writer.Write("\r\n");
                             writer.Seek(0, SeekOrigin.End);
                             writer.Write(bytebuffer);
                         }
@@ -152,12 +151,77 @@ namespace Lab_1_Serie_1_1251518_1229918.Controllers
             }
             return View();
         }
-        public ActionResult LecturaDescompresión(HttpPostedFileBase postedFile)
+        public ActionResult LecturaDescompresión()
         {
+            return View();
+        }
+        static List<byte> ASCII = new List<byte>();
+        static int CantidadBitsRequeridos = 0;
+        [HttpPost]
+        public ActionResult LecturaDesCompresión(HttpPostedFileBase postedFile)
+        {
+            diccionario = new Dictionary<string, int>();
+            using (var stream = new FileStream(RutaArchivos + "\\..\\Files\\archivoComprimido.lzw", FileMode.Open))
+            {
+                using (var reader = new BinaryReader(stream))
+                {
+                    var caracter = string.Empty;
+                    var ValorDiccionario = 0;
+                    byte[] byteBuffer = new byte[10000];
+                    var encontrado = false;
+                    var separador = false;
+                    while (reader.BaseStream.Position != reader.BaseStream.Length)
+                    {
+                        byteBuffer = reader.ReadBytes(10000);
+                        CantidadBitsRequeridos = byteBuffer[0];
+                        for (int i = 0; i < byteBuffer.Count(); i++)
+                        {
+                            if (!separador)
+                            {
+                                if ((byteBuffer[i] == 45))
+                                {
+                                    if ((byteBuffer[i + 1] == 45))
+                                    {
+                                        separador = true;
+                                        i = i + 2;
+                                    }
+                                }
+                                if (!encontrado)
+                                {
+                                    if (byteBuffer[i] == 124)
+                                    {
+                                        caracter += (char)byteBuffer[i - 1];
+                                        ValorDiccionario = byteBuffer[i+1];
+                                        encontrado = true;
+                                    }
+                                }
+                                else
+                                {
+                                    diccionario.Add(caracter, ValorDiccionario);
+                                    caracter = string.Empty;
+                                    encontrado = false;
+                                }
+                            }
+                            else
+                            {
+                                ASCII.Add(byteBuffer[i]);
+                            }
+                        }
+                    }
+                }
+            }
+            for (int i = 0; i < 2; i++)
+            {
+                ASCII.Remove(ASCII[0]);
+            }
+            return RedirectToAction("MétodoLZWDescompresion");
+        }
+
+        public ActionResult MétodoLZWDescompresion()
+        {
+            LZWCompressor LZW = new LZWCompressor();
+            LZW.Descompress(diccionario, ASCII, CantidadBitsRequeridos);
             return View();
         }
     }
 }
-
-
-
