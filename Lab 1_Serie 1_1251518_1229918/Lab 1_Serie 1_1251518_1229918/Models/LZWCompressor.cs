@@ -84,24 +84,17 @@ namespace Lab_1_Serie_1_1251518_1229918.Models
             }
             return binario;
         }
-        public bool VerificarConversion(int numerooriginal, string binario)
+        public int VerificarConversion(string binario)
         {
             int Conversor = 0;
-            for(int x =binario.Length-1, y = 0; x >= 0; x--, y++)
+            for (int x = binario.Length - 1, y = 0; x >= 0; x--, y++)
             {
                 if ((binario[x] == '0') || (binario[x] == '1'))
                 {
                     Conversor += (int)(int.Parse(binario[x].ToString()) * Math.Pow(2, y));
                 }
             }
-            if (Conversor == numerooriginal)
-            {
-                return true;
-            }
-            else
-            {
-                return false;
-            }
+            return Conversor;
         }
         public int CuantosBitsSeNecesitan(int numero)
         {

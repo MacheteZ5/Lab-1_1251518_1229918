@@ -10,7 +10,7 @@ namespace Lab_1_Serie_1_1251518_1229918
     {
         Dictionary<string, int> LecturaArchivo(string ArchivoLeido, int bufferLengt, Dictionary<string, int> diccionario, int ContadorElementosDiccionario, string RutaArchivos);
         string ConvertToBinary(int numero);
-        bool VerificarConversion(int numero, string binario);
+        int VerificarConversion(string binario);
         int CuantosBitsSeNecesitan(int numero);
         string Descompress(Dictionary<string, int> diccionario, List<byte> ASCII, int CantidadBitsRequeridos);
         int ConvertToDecimal(string binario);
