@@ -15,7 +15,7 @@ namespace Lab_1_Serie_1_1251518_1229918.Controllers
         
         static Dictionary<string, int> diccionario = new Dictionary<string, int>();
         static int ContadorElementosDiccionario = 0;
-        const int bufferLengt = 1000;
+        const int bufferLengt = 10000;
         static string RutaArchivos = string.Empty;
         public ActionResult Index()
         {
@@ -98,21 +98,12 @@ namespace Lab_1_Serie_1_1251518_1229918.Controllers
                     var binario = string.Empty;
                     foreach (int numero in ListaValores)
                     {
-                        if (numero < 256)
+                        string auxiliar = LZW.ConvertToBinary(numero);
+                        if (auxiliar.Count() < 8)
                         {
-                            string auxiliar = LZW.ConvertToBinary(numero);
                             auxiliar = auxiliar.PadLeft(8, '0');
-                            binario += auxiliar;
                         }
-                        else
-                        {
-                            string Auxiliar = LZW.ConvertToBinary(numero);
-                            while(!LZW.VerificarConversion(numero, Auxiliar))
-                            {
-                                Auxiliar = 0 + Auxiliar;
-                            }
-                            binario += Auxiliar;
-                        }
+                        binario += auxiliar;
                         if (binario.Count() >= 8)
                         {
                             var ochobits = string.Empty;

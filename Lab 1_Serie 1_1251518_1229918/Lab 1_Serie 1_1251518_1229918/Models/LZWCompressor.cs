@@ -114,53 +114,43 @@ namespace Lab_1_Serie_1_1251518_1229918.Models
         }
         public string Descompress(Dictionary<string, int> diccionario, List<byte> ASCII, int CantidadBitsRequeridos)
         {
-            int contador = 0;
-            int Backup = CantidadBitsRequeridos;
             string texto = string.Empty;
             string binario = string.Empty;
-            bool encontrado = false;
-            foreach (byte bit in ASCII)
-            {
-                string Auxiliar = ConvertToBinary(bit);
-                Auxiliar = Auxiliar.PadLeft(8, '0');
-                binario += Auxiliar;
-                if (binario.Count() >= CantidadBitsRequeridos)
+            var previo = string.Empty;
+            var actual = string.Empty;
+            LZWCompressor LZW = new LZWCompressor();
+            for (int i=0;i<ASCII.Count();i++)
+            { 
+                string Auxiliar = ConvertToBinary(ASCII[i]);
+                if (Auxiliar.Count() < 8)
                 {
-                    while (!encontrado)
+                    Auxiliar = Auxiliar.PadLeft(8, '0');
+                }
+                binario += Auxiliar;
+                int valor = LZW.ConvertToDecimal(binario);
+                if (diccionario.Count() < 256)
+                {
+                    actual += diccionario.FirstOrDefault(x => x.Value == valor).Key;
+                    if (!diccionario.ContainsKey(actual))
                     {
-                        //hace falta terminar el la descompresión
-                        string CadenaBitsRequeridos = string.Empty;
-                        for (int i = 0; i < 8; i++)
-                        {
-                            CadenaBitsRequeridos += binario[i];
-                        }
-                        LZWCompressor LZW = new LZWCompressor();
-                        int valor = LZW.ConvertToDecimal(CadenaBitsRequeridos);
-                        if (contador < 10)
-                        {
-                            if (diccionario.ContainsValue(valor))
-                            {
-                                texto = diccionario.FirstOrDefault(x => x.Value == valor).Key;
-                                encontrado = true;
-                                CadenaBitsRequeridos = string.Empty;
-                                encontrado = true;
-                            }
-                            else
-                            {
-                                CantidadBitsRequeridos--;
-                            }
-                        }
-                        else
-                        {
-
-                        }
+                        diccionario.Add(actual, diccionario.Count() + 1);
+                        actual = string.Empty;
+                        actual += diccionario.FirstOrDefault(x => x.Value == valor).Key;
+                        texto += previo;
+                        previo = string.Empty;
+                        previo = actual;
                     }
-
+                    else
+                    {
+                        previo += diccionario.FirstOrDefault(x => x.Value == valor).Key; 
+                    }
+                    binario = string.Empty;
+                }
+                else
+                {
+                    break;
                 }
             }
-
-
-
             return texto;
         }
         public int ConvertToDecimal(string binario)
