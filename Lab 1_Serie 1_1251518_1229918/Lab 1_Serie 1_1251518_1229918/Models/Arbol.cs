@@ -8,7 +8,7 @@ namespace Lab_1_Serie_1_1251518_1229918.Models
 {
     public class Arbol
     {
-        static string RutaArchivos = "";
+        static string RutaArchivos = string.Empty;
         public void recibirRutaArchivo(string ruta)
         {
             RutaArchivos = ruta;
@@ -65,7 +65,6 @@ namespace Lab_1_Serie_1_1251518_1229918.Models
                             {
                                 if (conteo != 0)
                                 {
-                                    writer.Write("\r\n");
                                     writer.Write(buffer[j]);
                                 }
                                 else

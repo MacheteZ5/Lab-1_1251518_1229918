@@ -13,7 +13,5 @@ namespace Lab1_FernandoOliva_1251518.Controllers
         {
             return View();
         }
-
-     
     }
 }
