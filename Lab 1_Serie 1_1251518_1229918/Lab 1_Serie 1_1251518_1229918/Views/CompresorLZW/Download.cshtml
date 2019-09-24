@@ -8,11 +8,10 @@
 <body>
     <p>Por favor, presione el nombre del archivo para inicial la descarga.</p>
     <div>
-        @foreach (var item in ViewData.Model)
-        {
+       
             @Html.ActionLink((string)item, "DownloadFile", new { filename = item });
             <br>
-        }
+        
     </div>
 
     <form action="~/CompresorLZW/index">

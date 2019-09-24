@@ -3,11 +3,13 @@ using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Web;
-
+using System.Text;
 namespace Lab_1_Serie_1_1251518_1229918.Models
 {
     public class LZWCompressor : LZWCompresor
+        
     {
+        static string RutaArchivo = string.Empty;
         public Dictionary<string, int> LecturaArchivo(string ArchivoLeido, int bufferLengt, Dictionary<string, int> diccionario, int ContadorElementosDiccionario, string RutaArchivos)
         {
             using (var stream = new FileStream(ArchivoLeido, FileMode.Open))
@@ -40,6 +42,7 @@ namespace Lab_1_Serie_1_1251518_1229918.Models
         //metodo para escribir el diccionario original en el archivo 
         void EscribirDiccionarioArchivo(Dictionary<string, int> diccionario, string RutaArchivos)
         {
+            RutaArchivo = RutaArchivos;
             //se utilizó una lista para que se escriba el numero de bytes correctos en el archivo y que no escriba más bytes debido por los espacios sobrantes del diccionario
             var ListaElementosDiccionario = new List<byte>();
             using (var writeStream = new FileStream(RutaArchivos + "\\..\\FilesLZW\\archivoComprimido.lzw", FileMode.OpenOrCreate))
@@ -99,6 +102,8 @@ namespace Lab_1_Serie_1_1251518_1229918.Models
         
         public string Descompress(Dictionary<string, int> diccionario, List<byte> ASCII, int CantidadBitsRequeridos)
         {
+            var byteBuffer = new byte[256];
+
             string texto = string.Empty;
             string binario = string.Empty;
             var previo = string.Empty;
@@ -124,20 +129,49 @@ namespace Lab_1_Serie_1_1251518_1229918.Models
                         texto += previo;
                         previo = string.Empty;
                         previo = actual;
+                        if(texto.Length == 512)
+                        {
+                            byteBuffer = Encoding.ASCII.GetBytes(texto);
+                            texto = string.Empty;
+                            using (var writeStream = new FileStream(RutaArchivo + "\\..\\FilesLZW\\archivoDescomprimido.txt", FileMode.OpenOrCreate))
+                            {
+                                using (var writer = new BinaryWriter(writeStream))
+                                {
+                                    writer.Write("\r\n");
+                                    writer.Write(byteBuffer);
+                                    writer.Write("\r\n");
+
+                                }
+                            }
+                        }
                     }
-                    else
+                    else 
                     {
                         previo += diccionario.FirstOrDefault(x => x.Value == valor).Key; 
                     }
                     binario = string.Empty;
                 }
-                else
+                else if(diccionario.Count() > 256 && diccionario.Count() < 512)
                 {
                     break;
                 }
             }
             return texto;
         }
+        public void EscribirDescompresionArchivo(byte[] buffer)
+        {
+            using (var writeStream = new FileStream(RutaArchivo + "\\..\\FilesLZW\\archivoDescomprimido.lzw", FileMode.OpenOrCreate))
+            {
+                using (var writer = new BinaryWriter(writeStream))
+                {
+                    writer.Write("\r\n");
+                    writer.Write(buffer);
+                    writer.Write("\r\n");
+
+                }
+            }
+        }
+
         public int ConvertToDecimal(string binario)
         {
             int numero = 0;
