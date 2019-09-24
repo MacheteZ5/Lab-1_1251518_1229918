@@ -42,7 +42,7 @@ namespace Lab_1_Serie_1_1251518_1229918.Models
         {
             //se utilizó una lista para que se escriba el numero de bytes correctos en el archivo y que no escriba más bytes debido por los espacios sobrantes del diccionario
             var ListaElementosDiccionario = new List<byte>();
-            using (var writeStream = new FileStream(RutaArchivos + "\\..\\Files\\archivoComprimido.lzw", FileMode.OpenOrCreate))
+            using (var writeStream = new FileStream(RutaArchivos + "\\..\\FilesLZW\\archivoComprimido.lzw", FileMode.OpenOrCreate))
             {
                 using (var writer = new BinaryWriter(writeStream))
                 {
@@ -73,7 +73,7 @@ namespace Lab_1_Serie_1_1251518_1229918.Models
             {
                 if ((numero % 2) != 0)
                 {
-                    binario = "1"+binario;
+                    binario = "1"+ binario;
 
                 }
                 else
@@ -96,15 +96,7 @@ namespace Lab_1_Serie_1_1251518_1229918.Models
             }
             return Conversor;
         }
-        public int CuantosBitsSeNecesitan(int numero)
-        {
-            int i = 0;
-            while (Math.Pow(2,i) < numero)
-            {
-                i++;
-            }
-            return i;
-        }
+        
         public string Descompress(Dictionary<string, int> diccionario, List<byte> ASCII, int CantidadBitsRequeridos)
         {
             string texto = string.Empty;
@@ -157,6 +149,16 @@ namespace Lab_1_Serie_1_1251518_1229918.Models
                 }
             }
             return numero;
+        }
+
+        public int CalcularBitsNecesarios(int numero)
+        {
+            int i = 0;
+            while (Math.Pow(2, i) < numero)
+            {
+                i++;
+            }
+            return i;
         }
     }
 }

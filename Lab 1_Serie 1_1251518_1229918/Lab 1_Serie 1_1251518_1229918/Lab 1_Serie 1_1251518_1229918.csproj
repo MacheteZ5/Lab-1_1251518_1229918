@@ -170,6 +170,7 @@
     <Content Include="Views\CompresorLZW\LecturaDescompresión.cshtml" />
     <Content Include="Views\Home\Index.cshtml" />
     <Content Include="Views\CompresorLZW\LecturaCompresión.cshtml" />
+    <Content Include="Views\CompresorLZW\Download.cshtml" />
   </ItemGroup>
   <ItemGroup>
     <Folder Include="App_Data\" />

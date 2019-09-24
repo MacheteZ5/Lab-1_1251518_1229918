@@ -80,7 +80,7 @@ namespace Lab_1_Serie_1_1251518_1229918.Controllers
                                 diccionario.Add(actual, ContadorElementosDiccionario);
                                 actual = string.Empty;
                                 actual += (char)bit;
-                                ListaValores.Add(/*LZW.ConvertToBinary*/(diccionario[previo]));
+                                ListaValores.Add(diccionario[previo]);
                                 previo = string.Empty;
                                 previo += (char)bit;
                             }
@@ -91,12 +91,12 @@ namespace Lab_1_Serie_1_1251518_1229918.Controllers
                         }
                         if (previo != string.Empty)
                         {
-                            ListaValores.Add(/*LZW.ConvertToBinary*/(diccionario[previo]));
+                            ListaValores.Add(diccionario[previo]);
                         }
                     }
                     //convertirlos a bytes
                     var binario = string.Empty;
-                    var valorCadena = LZW.CuantosBitsSeNecesitan(diccionario.Count());
+                    var valorCadena = LZW.CalcularBitsNecesarios(diccionario.Count());
 
                     foreach (int aux in ListaValores)
                     {
@@ -112,22 +112,22 @@ namespace Lab_1_Serie_1_1251518_1229918.Controllers
                         }
                         else
                         {
-                            string pruebas = string.Empty;
+                            string auxiliarBinario = string.Empty;
                             foreach(char caracter in binario)
                             {
-                                pruebas+= caracter;
-                                if (pruebas.Count() == 8)
+                                auxiliarBinario += caracter;
+                                if (auxiliarBinario.Count() == 8)
                                 {
-                                    decimal x = Convert.ToInt32(pruebas, 2);
+                                    decimal x = Convert.ToInt32(auxiliarBinario, 2);
                                     DECABYTE = Convert.ToByte(x);
                                     ListaBytesComprimidos.Add(DECABYTE);
-                                    pruebas = string.Empty;
+                                    auxiliarBinario = string.Empty;
                                 }
                             }
-                            if (pruebas != string.Empty)
+                            if (auxiliarBinario != string.Empty)
                             {
-                                pruebas = pruebas.PadRight(8, '0');
-                                decimal x = Convert.ToInt32(pruebas, 2);
+                                auxiliarBinario = auxiliarBinario.PadRight(8, '0');
+                                decimal x = Convert.ToInt32(auxiliarBinario, 2);
                                 DECABYTE = Convert.ToByte(x);
                                 ListaBytesComprimidos.Add(DECABYTE);
                             }
@@ -139,7 +139,7 @@ namespace Lab_1_Serie_1_1251518_1229918.Controllers
                     {
                         bytebuffer[i] = ListaBytesComprimidos[i];
                     }
-                    using (var writeStream = new FileStream(RutaArchivos + "\\..\\Files\\archivoComprimido.lzw", FileMode.Open))
+                    using (var writeStream = new FileStream(RutaArchivos + "\\..\\FilesLZW\\archivoComprimido.lzw", FileMode.Open))
                     {
                         using (var writer = new BinaryWriter(writeStream))
                         {
@@ -151,7 +151,7 @@ namespace Lab_1_Serie_1_1251518_1229918.Controllers
                     }
                 }
             }
-            return View();
+            return View("download");
         }
         public ActionResult LecturaDescompresión()
         {
@@ -163,7 +163,7 @@ namespace Lab_1_Serie_1_1251518_1229918.Controllers
         public ActionResult LecturaDesCompresión(HttpPostedFileBase postedFile)
         {
             diccionario = new Dictionary<string, int>();
-            using (var stream = new FileStream(RutaArchivos + "\\..\\Files\\archivoComprimido.lzw", FileMode.Open))
+            using (var stream = new FileStream(RutaArchivos + "\\..\\FilesLZW\\archivoComprimido.lzw", FileMode.Open))
             {
                 using (var reader = new BinaryReader(stream))
                 {
@@ -224,6 +224,24 @@ namespace Lab_1_Serie_1_1251518_1229918.Controllers
             LZWCompressor LZW = new LZWCompressor();
             LZW.Descompress(diccionario, ASCII, CantidadBitsRequeridos);
             return View();
+        }
+
+        public ActionResult Download()
+        {
+            string path = Server.MapPath("~/FilesLZW/");
+            DirectoryInfo dirInfo = new DirectoryInfo(path);
+            FileInfo[] files = dirInfo.GetFiles(".");
+            List<string> lista = new List<string>(files.Length);
+            foreach (var item in files)
+            {
+                lista.Add(item.Name);
+            }
+            return View(lista);
+        }
+        public ActionResult DownloadFile(string filename)
+        {
+            string fullPath = Path.Combine(Server.MapPath("~/FilesLZW/"), filename);
+            return File(fullPath, System.Net.Mime.MediaTypeNames.Application.Octet, filename);
         }
     }
 }
