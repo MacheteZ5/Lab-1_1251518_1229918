@@ -3,13 +3,12 @@ using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Web;
-using System.Text;
+
 namespace Lab_1_Serie_1_1251518_1229918.Models
 {
     public class LZWCompressor : LZWCompresor
-        
     {
-        static string RutaArchivo = string.Empty;
+
         public Dictionary<string, int> LecturaArchivo(string ArchivoLeido, int bufferLengt, Dictionary<string, int> diccionario, int ContadorElementosDiccionario, string RutaArchivos)
         {
             using (var stream = new FileStream(ArchivoLeido, FileMode.Open))
@@ -42,10 +41,9 @@ namespace Lab_1_Serie_1_1251518_1229918.Models
         //metodo para escribir el diccionario original en el archivo 
         void EscribirDiccionarioArchivo(Dictionary<string, int> diccionario, string RutaArchivos)
         {
-            RutaArchivo = RutaArchivos;
             //se utilizó una lista para que se escriba el numero de bytes correctos en el archivo y que no escriba más bytes debido por los espacios sobrantes del diccionario
             var ListaElementosDiccionario = new List<byte>();
-            using (var writeStream = new FileStream(RutaArchivos + "\\..\\FilesLZW\\archivoComprimido.lzw", FileMode.OpenOrCreate))
+            using (var writeStream = new FileStream(RutaArchivos + "\\..\\Files\\archivoComprimido.lzw", FileMode.OpenOrCreate))
             {
                 using (var writer = new BinaryWriter(writeStream))
                 {
@@ -56,7 +54,7 @@ namespace Lab_1_Serie_1_1251518_1229918.Models
                         ListaElementosDiccionario.Add(Convert.ToByte(elemento.Value));
                     }
                     byte[] byteBuffer = new byte[ListaElementosDiccionario.Count()];
-                    for(int i = 0; i < ListaElementosDiccionario.Count(); i++)
+                    for (int i = 0; i < ListaElementosDiccionario.Count(); i++)
                     {
                         byteBuffer[i] = ListaElementosDiccionario[i];
                     }
@@ -72,11 +70,11 @@ namespace Lab_1_Serie_1_1251518_1229918.Models
         public string ConvertToBinary(int numero)
         {
             string binario = string.Empty;
-            while (numero!=0)
+            while (numero != 0)
             {
                 if ((numero % 2) != 0)
                 {
-                    binario = "1"+ binario;
+                    binario = "1" + binario;
 
                 }
                 else
@@ -99,79 +97,59 @@ namespace Lab_1_Serie_1_1251518_1229918.Models
             }
             return Conversor;
         }
-        
+        public int CuantosBitsSeNecesitan(int numero)
+        {
+            int i = 0;
+            while (Math.Pow(2, i) < numero)
+            {
+                i++;
+            }
+            return i;
+        }
         public string Descompress(Dictionary<string, int> diccionario, List<byte> ASCII, int CantidadBitsRequeridos)
         {
-            var byteBuffer = new byte[256];
-
-            string texto = string.Empty;
-            string binario = string.Empty;
+            var texto = string.Empty;
             var previo = string.Empty;
             var actual = string.Empty;
+            var AuxiliarBitsRequeridos = string.Empty;
+            var binario = string.Empty;
             LZWCompressor LZW = new LZWCompressor();
-            for (int i=0;i<ASCII.Count();i++)
-            { 
-                string Auxiliar = ConvertToBinary(ASCII[i]);
-                if (Auxiliar.Count() < 8)
+            for (int i = 0; i < ASCII.Count(); i++)
+            {
+                binario = ConvertToBinary(ASCII[i]);
+                if (binario.Count() != 8)
                 {
-                    Auxiliar = Auxiliar.PadLeft(8, '0');
+                    binario = binario.PadLeft(8, '0');
                 }
-                binario += Auxiliar;
-                int valor = LZW.ConvertToDecimal(binario);
-                if (diccionario.Count() < 256)
+                foreach (char caracter in binario)
                 {
-                    actual += diccionario.FirstOrDefault(x => x.Value == valor).Key;
-                    if (!diccionario.ContainsKey(actual))
+                    AuxiliarBitsRequeridos += caracter;
+                    if (AuxiliarBitsRequeridos.Count() == CantidadBitsRequeridos)
                     {
-                        diccionario.Add(actual, diccionario.Count() + 1);
-                        actual = string.Empty;
-                        actual += diccionario.FirstOrDefault(x => x.Value == valor).Key;
-                        texto += previo;
-                        previo = string.Empty;
-                        previo = actual;
-                        if(texto.Length == 512)
+                        int valor = LZW.ConvertToDecimal(AuxiliarBitsRequeridos);
+                        string receptor = diccionario.FirstOrDefault(x => x.Value == valor).Key;
+                        foreach (char j in receptor)
                         {
-                            byteBuffer = Encoding.ASCII.GetBytes(texto);
-                            texto = string.Empty;
-                            using (var writeStream = new FileStream(RutaArchivo + "\\..\\FilesLZW\\archivoDescomprimido.txt", FileMode.OpenOrCreate))
+                            actual += j;
+                            if (!diccionario.ContainsKey(actual))
                             {
-                                using (var writer = new BinaryWriter(writeStream))
-                                {
-                                    writer.Write("\r\n");
-                                    writer.Write(byteBuffer);
-                                    writer.Write("\r\n");
-
-                                }
+                                diccionario.Add(actual, diccionario.Count() + 1);
+                                texto += previo;
+                                previo = string.Empty;
+                                previo += j;
+                                actual = previo;
+                            }
+                            else
+                            {
+                                previo = actual;
                             }
                         }
+                        AuxiliarBitsRequeridos = string.Empty;
                     }
-                    else 
-                    {
-                        previo += diccionario.FirstOrDefault(x => x.Value == valor).Key; 
-                    }
-                    binario = string.Empty;
-                }
-                else if(diccionario.Count() > 256 && diccionario.Count() < 512)
-                {
-                    break;
                 }
             }
             return texto;
         }
-        public void EscribirDescompresionArchivo(byte[] buffer)
-        {
-            using (var writeStream = new FileStream(RutaArchivo + "\\..\\FilesLZW\\archivoDescomprimido.lzw", FileMode.OpenOrCreate))
-            {
-                using (var writer = new BinaryWriter(writeStream))
-                {
-                    writer.Write("\r\n");
-                    writer.Write(buffer);
-                    writer.Write("\r\n");
-
-                }
-            }
-        }
-
         public int ConvertToDecimal(string binario)
         {
             int numero = 0;
@@ -187,12 +165,7 @@ namespace Lab_1_Serie_1_1251518_1229918.Models
 
         public int CalcularBitsNecesarios(int numero)
         {
-            int i = 0;
-            while (Math.Pow(2, i) < numero)
-            {
-                i++;
-            }
-            return i;
+            throw new NotImplementedException();
         }
     }
 }
