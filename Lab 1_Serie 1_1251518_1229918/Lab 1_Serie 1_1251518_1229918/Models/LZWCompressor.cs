@@ -174,8 +174,6 @@ namespace Lab_1_Serie_1_1251518_1229918.Models
                         }
                         foreach (char j in receptor)
                         {
-                            
-
                             actual += j;
                             if (!diccionario.ContainsKey(actual))
                             {
@@ -189,6 +187,10 @@ namespace Lab_1_Serie_1_1251518_1229918.Models
                         AuxiliarBitsRequeridos = string.Empty;
                     }
                 }
+            }
+            if (actual != string.Empty)
+            {
+                texto += actual;
             }
             return texto;
         }
