@@ -16,7 +16,7 @@ namespace Lab_1_Serie_1_1251518_1229918.Controllers
         static List<byte> ListaByte = new List<byte>();
         static List<TreeElement> lista = new List<TreeElement>();
         //largo del buffer al momento de la lectura
-        const int bufferLengt = 1000;
+        const int bufferLengt = 1000000;
         [HttpPost]
         public ActionResult LecturaCompresión(HttpPostedFileBase postedFile)
         {
@@ -204,12 +204,12 @@ namespace Lab_1_Serie_1_1251518_1229918.Controllers
                 {
                     string prefijos = string.Empty;
                     char caracter = ' ';
-                    byte[] byteBuffer = new byte[10000];
+                    byte[] byteBuffer = new byte[bufferLengt];
                     bool encontrado = false;
                     bool separador = false;
                     while (reader.BaseStream.Position != reader.BaseStream.Length)
                     {
-                        byteBuffer = reader.ReadBytes(10000);
+                        byteBuffer = reader.ReadBytes(bufferLengt);
                         for (int i = 0; i < byteBuffer.Count(); i++)
                         {
                             if (separador != true)

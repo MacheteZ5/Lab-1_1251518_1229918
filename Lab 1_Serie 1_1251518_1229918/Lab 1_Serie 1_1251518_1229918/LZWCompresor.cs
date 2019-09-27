@@ -8,9 +8,10 @@ namespace Lab_1_Serie_1_1251518_1229918
 {
     public interface LZWCompresor
     {
-        Dictionary<string, int> LecturaArchivo(string ArchivoLeido, int bufferLengt, Dictionary<string, int> diccionario, int ContadorElementosDiccionario, string RutaArchivos);
-        string ConvertToBinary(int numero);
-        int VerificarConversion(string binario);
+        Dictionary<string, int> LecturaArchivo(string ArchivoLeido, int bufferLengt, Dictionary<string, int> diccionario, string RutaArchivos);
+        Dictionary<string, int> CompararCaracteres(Dictionary<string, int> diccionario, ref List<string> ListaValores, int bufferLengt, string ArchivoLeido);
+
+        byte[] CreaciónBufferEscritura(Dictionary<string, int> diccionario, List<string> ListaValores, List<byte> ListaBytesComprimidos, int valorCadena);
         int CuantosBitsSeNecesitan(int numero);
         string Descompress(Dictionary<string, int> diccionario, List<byte> ASCII, int CantidadBitsRequeridos);
         int ConvertToDecimal(string binario);

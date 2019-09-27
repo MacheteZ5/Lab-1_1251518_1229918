@@ -8,7 +8,7 @@ namespace Lab_1_Serie_1_1251518_1229918.Models
 {
     public class LZWCompressor : LZWCompresor
     {
-        public Dictionary<string, int> LecturaArchivo(string ArchivoLeido, int bufferLengt, Dictionary<string, int> diccionario, int ContadorElementosDiccionario, string RutaArchivos)
+        public Dictionary<string, int> LecturaArchivo(string ArchivoLeido, int bufferLengt, Dictionary<string, int> diccionario, string RutaArchivos)
         {
             using (var stream = new FileStream(ArchivoLeido, FileMode.Open))
             {
@@ -22,17 +22,16 @@ namespace Lab_1_Serie_1_1251518_1229918.Models
                         foreach (byte bit in byteBuffer)
                         {
                             //añadir al diccionario
-                            llave = string.Empty;
                             llave += (char)bit;
                             if (!diccionario.ContainsKey(llave))
                             {
-                                ContadorElementosDiccionario++;
-                                diccionario.Add(llave, ContadorElementosDiccionario);
+                                diccionario.Add(llave, diccionario.Count() + 1);
                             }
+                            llave = string.Empty;
                         }
                         //se escribe el diccionario original en el archivo
-                        EscribirDiccionarioArchivo(diccionario, RutaArchivos);
                     }
+                    EscribirDiccionarioArchivo(diccionario, RutaArchivos);
                 }
             }
             return diccionario;
@@ -53,7 +52,7 @@ namespace Lab_1_Serie_1_1251518_1229918.Models
                         ListaElementosDiccionario.Add(Convert.ToByte(elemento.Value));
                     }
                     byte[] byteBuffer = new byte[ListaElementosDiccionario.Count()];
-                    for(int i = 0; i < ListaElementosDiccionario.Count(); i++)
+                    for (int i = 0; i < ListaElementosDiccionario.Count(); i++)
                     {
                         byteBuffer[i] = ListaElementosDiccionario[i];
                     }
@@ -66,36 +65,78 @@ namespace Lab_1_Serie_1_1251518_1229918.Models
                 }
             }
         }
-        public string ConvertToBinary(int numero)
-        {
-            string binario = string.Empty;
-            while (numero!=0)
-            {
-                if ((numero % 2) != 0)
-                {
-                    binario = "1"+binario;
 
-                }
-                else
-                {
-                    binario = "0" + binario;
-                }
-                numero /= 2;
-            }
-            return binario;
-        }
-        public int VerificarConversion(string binario)
+        public Dictionary<string, int> CompararCaracteres(Dictionary<string, int> diccionario, ref List<string> ListaValores, int bufferLengt, string ArchivoLeido)
         {
-            int Conversor = 0;
-            for (int x = binario.Length - 1, y = 0; x >= 0; x--, y++)
+            var previo = string.Empty;
+            var actual = string.Empty;
+            using (var stream = new FileStream(ArchivoLeido, FileMode.Open))
             {
-                if ((binario[x] == '0') || (binario[x] == '1'))
+                using (var reader = new BinaryReader(stream))
                 {
-                    Conversor += (int)(int.Parse(binario[x].ToString()) * Math.Pow(2, y));
+                    var byteBuffer = new byte[bufferLengt];
+                    while (reader.BaseStream.Position != reader.BaseStream.Length)
+                    {
+                        byteBuffer = reader.ReadBytes(bufferLengt);
+                        for (int i = 0; i < byteBuffer.Count(); i++)
+                        {
+                            actual += (char)byteBuffer[i];
+                            if (!diccionario.ContainsKey(actual))
+                            {
+                                diccionario.Add(actual, diccionario.Count() + 1);
+                                ListaValores.Add(Convert.ToString(diccionario[previo], 2));
+                                actual = string.Empty;
+                                actual += (char)(byteBuffer[i]);
+                                previo = actual;
+                            }
+                            else
+                            {
+                                previo = actual;
+                            }
+                        }
+                    }
+                    if (previo != string.Empty)
+                    {
+                        ListaValores.Add(Convert.ToString(diccionario[previo], 2));
+                    }
                 }
             }
-            return Conversor;
+            return diccionario;
         }
+        public byte[] CreaciónBufferEscritura(Dictionary<string, int> diccionario, List<string> ListaValores, List<byte> ListaBytesComprimidos, int valorCadena)
+        {
+            var auxiliar = string.Empty;
+            foreach (var valor in ListaValores)
+            {
+                var binario = valor;
+                binario = binario.PadLeft(valorCadena, '0');
+                foreach (char caracter in binario)
+                {
+                    auxiliar += caracter;
+                    if (auxiliar.Count() == 8)
+                    {
+                        var x = Convert.ToInt32(auxiliar.Substring(0, 8), 2);
+                        byte DECABYTE = Convert.ToByte(x);
+                        ListaBytesComprimidos.Add(DECABYTE);
+                        auxiliar = string.Empty;
+                    }
+                }
+            }
+            if (auxiliar != string.Empty)
+            {
+                auxiliar = auxiliar.PadRight(8, '0');
+                var x = Convert.ToInt32(auxiliar.Substring(0, 8), 2);
+                byte DECABYTE = Convert.ToByte(x);
+                ListaBytesComprimidos.Add(DECABYTE);
+            }
+            byte[] bytebuffer = new byte[ListaBytesComprimidos.Count()];
+            for (int i = 0; i < ListaBytesComprimidos.Count(); i++)
+            {
+                bytebuffer[i] = ListaBytesComprimidos[i];
+            }
+            return bytebuffer;
+        }
+    
         public int CuantosBitsSeNecesitan(int numero)
         {
             int i = 0;
@@ -107,41 +148,46 @@ namespace Lab_1_Serie_1_1251518_1229918.Models
         }
         public string Descompress(Dictionary<string, int> diccionario, List<byte> ASCII, int CantidadBitsRequeridos)
         {
-            string texto = string.Empty;
-            string binario = string.Empty;
+            var texto = string.Empty;
             var previo = string.Empty;
             var actual = string.Empty;
+            var AuxiliarBitsRequeridos = string.Empty;
+            var binario = string.Empty;
             LZWCompressor LZW = new LZWCompressor();
-            for (int i=0;i<ASCII.Count();i++)
-            { 
-                string Auxiliar = ConvertToBinary(ASCII[i]);
-                if (Auxiliar.Count() < 8)
+            var ASCIIABYTE = new List<int>();
+            foreach(byte bit in ASCII)
+            {
+                binario = Convert.ToString(bit, 2);
+                binario = binario.PadLeft(8, '0');
+                foreach (char caracter in binario)
                 {
-                    Auxiliar = Auxiliar.PadLeft(8, '0');
-                }
-                binario += Auxiliar;
-                int valor = LZW.ConvertToDecimal(binario);
-                if (diccionario.Count() < 256)
-                {
-                    actual += diccionario.FirstOrDefault(x => x.Value == valor).Key;
-                    if (!diccionario.ContainsKey(actual))
+                    AuxiliarBitsRequeridos += caracter;
+                    if (AuxiliarBitsRequeridos.Length == CantidadBitsRequeridos)
                     {
-                        diccionario.Add(actual, diccionario.Count() + 1);
-                        actual = string.Empty;
-                        actual += diccionario.FirstOrDefault(x => x.Value == valor).Key;
-                        texto += previo;
-                        previo = string.Empty;
-                        previo = actual;
+                        int valor = Convert.ToInt32(AuxiliarBitsRequeridos.Substring(0, CantidadBitsRequeridos), 2);
+                        var receptor = diccionario.LastOrDefault(x => x.Value == valor).Key;
+                        if (diccionario.Count() < valor)
+                        {
+                            valor = diccionario.Count();
+                            receptor = diccionario.LastOrDefault(x => x.Value == valor).Key;
+                            receptor = receptor.Substring(0, 1);
+                        }
+                        foreach (char j in receptor)
+                        {
+                            
+
+                            actual += j;
+                            if (!diccionario.ContainsKey(actual))
+                            {
+                                texto += previo;
+                                diccionario.Add(actual, diccionario.Count() + 1);
+                                actual = string.Empty;
+                                actual += j;
+                            }
+                            previo = actual;
+                        }
+                        AuxiliarBitsRequeridos = string.Empty;
                     }
-                    else
-                    {
-                        previo += diccionario.FirstOrDefault(x => x.Value == valor).Key; 
-                    }
-                    binario = string.Empty;
-                }
-                else
-                {
-                    break;
                 }
             }
             return texto;
@@ -158,5 +204,7 @@ namespace Lab_1_Serie_1_1251518_1229918.Models
             }
             return numero;
         }
+
+        
     }
 }

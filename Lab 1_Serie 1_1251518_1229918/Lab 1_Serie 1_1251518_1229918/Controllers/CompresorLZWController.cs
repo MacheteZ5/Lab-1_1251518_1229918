@@ -14,8 +14,8 @@ namespace Lab_1_Serie_1_1251518_1229918.Controllers
     {
         
         static Dictionary<string, int> diccionario = new Dictionary<string, int>();
-        static int ContadorElementosDiccionario = 0;
-        const int bufferLengt = 10000;
+        //static int ContadorElementosDiccionario = 0;
+        const int bufferLengt = 1000000;
         static string RutaArchivos = string.Empty;
         public ActionResult Index()
         {
@@ -41,114 +41,35 @@ namespace Lab_1_Serie_1_1251518_1229918.Controllers
             //el siguiente if permite seleccionar un archivo en específico
             if (postedFile != null)
             {
-                string rutaDirectorioUsuario = Server.MapPath("");
+                string rutaDirectorioUsuario = Server.MapPath(string.Empty);
                 //se toma la ruta y nombre del archivo
                 ArchivoLeido = rutaDirectorioUsuario + Path.GetFileName(postedFile.FileName);
                 // se añade la extensión del archivo
-                //string extension = Path.GetExtension(postedFile.FileName);
                 RutaArchivos = rutaDirectorioUsuario;
                 postedFile.SaveAs(ArchivoLeido);
                 LZWCompressor LZWLectura = new LZWCompressor();
-                diccionario = LZWLectura.LecturaArchivo(ArchivoLeido, bufferLengt, diccionario, ContadorElementosDiccionario, RutaArchivos);
-                ContadorElementosDiccionario = diccionario.Count();
+                diccionario = LZWLectura.LecturaArchivo(ArchivoLeido, bufferLengt, diccionario, RutaArchivos);
             }
             return RedirectToAction("MétodoLZW", new RouteValueDictionary(new { Controller = "CompresorLZW", Action = "MétodoLZW", ArchivoLeido }));
         }
-        
+
         public ActionResult MétodoLZW(string ArchivoLeido)
         {
             LZWCompressor LZW = new LZWCompressor();
-            var ListaValores = new List<int>();
+            var ListaValores = new List<string>();
             var ListaBytesComprimidos = new List<byte>();
-            var previo = string.Empty;
-            var actual = string.Empty;
-            using (var stream = new FileStream(ArchivoLeido, FileMode.Open))
+            diccionario = LZW.CompararCaracteres(diccionario, ref ListaValores, bufferLengt, ArchivoLeido);
+            //convertirlos a bytes
+            var valorCadena = LZW.CuantosBitsSeNecesitan(diccionario.Count());
+            byte[] bytebuffer = LZW.CreaciónBufferEscritura(diccionario, ListaValores, ListaBytesComprimidos, valorCadena);
+            using (var writeStream = new FileStream(RutaArchivos + "\\..\\Files\\archivoComprimido.lzw", FileMode.Open))
             {
-                using (var reader = new BinaryReader(stream))
+                using (var writer = new BinaryWriter(writeStream))
                 {
-                    var byteBuffer = new byte[bufferLengt];
-                    while (reader.BaseStream.Position != reader.BaseStream.Length)
-                    {
-                        byteBuffer = reader.ReadBytes(bufferLengt);
-                        foreach (byte bit in byteBuffer)
-                        {
-                            //añadir al diccionario
-                            actual += (char)bit;
-                            if (!diccionario.ContainsKey(actual))
-                            {
-                                ContadorElementosDiccionario++;
-                                diccionario.Add(actual, ContadorElementosDiccionario);
-                                actual = string.Empty;
-                                actual += (char)bit;
-                                ListaValores.Add(/*LZW.ConvertToBinary*/(diccionario[previo]));
-                                previo = string.Empty;
-                                previo += (char)bit;
-                            }
-                            else
-                            {
-                                previo += (char)bit;
-                            }
-                        }
-                        if (previo != string.Empty)
-                        {
-                            ListaValores.Add(/*LZW.ConvertToBinary*/(diccionario[previo]));
-                        }
-                    }
-                    //convertirlos a bytes
-                    var binario = string.Empty;
-                    var valorCadena = LZW.CuantosBitsSeNecesitan(diccionario.Count());
-
-                    foreach (int aux in ListaValores)
-                    {
-                        byte DECABYTE = new byte();
-                        binario = LZW.ConvertToBinary(aux);
-                        binario = binario.PadLeft(valorCadena, '0');
-                        if (aux < 256)
-                        {
-                            decimal x = Convert.ToInt32(binario, 2);
-                            DECABYTE = Convert.ToByte(x);
-                            ListaBytesComprimidos.Add(DECABYTE);
-                            binario = string.Empty;
-                        }
-                        else
-                        {
-                            string pruebas = string.Empty;
-                            foreach(char caracter in binario)
-                            {
-                                pruebas+= caracter;
-                                if (pruebas.Count() == 8)
-                                {
-                                    decimal x = Convert.ToInt32(pruebas, 2);
-                                    DECABYTE = Convert.ToByte(x);
-                                    ListaBytesComprimidos.Add(DECABYTE);
-                                    pruebas = string.Empty;
-                                }
-                            }
-                            if (pruebas != string.Empty)
-                            {
-                                pruebas = pruebas.PadRight(8, '0');
-                                decimal x = Convert.ToInt32(pruebas, 2);
-                                DECABYTE = Convert.ToByte(x);
-                                ListaBytesComprimidos.Add(DECABYTE);
-                            }
-                            binario = string.Empty;
-                        }
-                    }
-                    byte[] bytebuffer = new byte[ListaBytesComprimidos.Count()];
-                    for (int i = 0; i < ListaBytesComprimidos.Count(); i++)
-                    {
-                        bytebuffer[i] = ListaBytesComprimidos[i];
-                    }
-                    using (var writeStream = new FileStream(RutaArchivos + "\\..\\Files\\archivoComprimido.lzw", FileMode.Open))
-                    {
-                        using (var writer = new BinaryWriter(writeStream))
-                        {
-                            writer.Seek(0,SeekOrigin.Begin);
-                            writer.Write(Convert.ToByte(valorCadena));
-                            writer.Seek(0, SeekOrigin.End);
-                            writer.Write(bytebuffer);
-                        }
-                    }
+                    writer.Seek(0, SeekOrigin.Begin);
+                    writer.Write(Convert.ToByte(valorCadena));
+                    writer.Seek(0, SeekOrigin.End);
+                    writer.Write(bytebuffer);
                 }
             }
             return View();
@@ -169,13 +90,18 @@ namespace Lab_1_Serie_1_1251518_1229918.Controllers
                 {
                     var caracter = string.Empty;
                     var ValorDiccionario = 0;
-                    byte[] byteBuffer = new byte[10000];
+                    byte[] byteBuffer = new byte[bufferLengt];
                     var encontrado = false;
                     var separador = false;
+                    int conteo = 0;
                     while (reader.BaseStream.Position != reader.BaseStream.Length)
                     {
-                        byteBuffer = reader.ReadBytes(10000);
-                        CantidadBitsRequeridos = byteBuffer[0];
+                        byteBuffer = reader.ReadBytes(10000000);
+                        if (conteo == 0)
+                        {
+                            CantidadBitsRequeridos = byteBuffer[0];
+                            conteo++;
+                        }
                         for (int i = 0; i < byteBuffer.Count(); i++)
                         {
                             if (!separador)
@@ -222,7 +148,7 @@ namespace Lab_1_Serie_1_1251518_1229918.Controllers
         public ActionResult MétodoLZWDescompresion()
         {
             LZWCompressor LZW = new LZWCompressor();
-            LZW.Descompress(diccionario, ASCII, CantidadBitsRequeridos);
+            string texto = LZW.Descompress(diccionario, ASCII, CantidadBitsRequeridos);
             return View();
         }
     }
