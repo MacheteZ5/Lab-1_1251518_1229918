@@ -2,6 +2,30 @@
 @{
     ViewBag.Title = "Download";
 }
+<style>
+    #carga {
+        background-color: #663300;
+        border: none;
+        color: white;
+        padding: 8px 16px;
+        text-decoration: none;
+        margin: 4px 2px;
+        cursor: pointer;
+        text-align: center;
+        font-weight: bold;
+    }
+    #volver {
+        background-color: #003366;
+        border: none;
+        color: white;
+        padding: 8px 16px;
+        text-decoration: none;
+        margin: 4px 2px;
+        cursor: pointer;
+        text-align: center;
+        font-weight: bold;
+    }
+</style>
 <h1>MIS COMPRESIONES</h1>
 <h2>El archivo se proceso correctamente</h2>
 
@@ -14,7 +38,10 @@
             <br>
         }
     </div>
-
+    @using (Html.BeginForm("ObtenerDatosCompresion", "CompresorLZW", FormMethod.Post, new { enctype = "multipart/form-data" }))
+    {
+        <input id="carga" type="submit" value="Obtener Datos Compresión" />
+    }
     <form action="~/Home">
         <input id="volver" type="submit" value="Volver A Página Principal" />
     </form>

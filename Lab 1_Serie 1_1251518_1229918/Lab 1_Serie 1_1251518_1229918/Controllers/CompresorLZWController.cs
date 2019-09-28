@@ -16,6 +16,8 @@ namespace Lab_1_Serie_1_1251518_1229918.Controllers
         //static int ContadorElementosDiccionario = 0;
         const int bufferLengt = 1000000;
         static string RutaArchivos = string.Empty;
+        static string ArchivoOriginal = string.Empty;
+
         public ActionResult Index()
         {
             return View();
@@ -46,6 +48,7 @@ namespace Lab_1_Serie_1_1251518_1229918.Controllers
                 // se añade la extensión del archivo
                 RutaArchivos = rutaDirectorioUsuario;
                 postedFile.SaveAs(ArchivoLeido);
+                ArchivoOriginal = ArchivoLeido;
                 LZWCompressor LZWLectura = new LZWCompressor();
                 diccionario = LZWLectura.LecturaArchivo(ArchivoLeido, bufferLengt, diccionario, RutaArchivos);
             }
@@ -187,6 +190,30 @@ namespace Lab_1_Serie_1_1251518_1229918.Controllers
         {
             string fullPath = Path.Combine(Server.MapPath("~/Files/"), filename);
             return File(fullPath, System.Net.Mime.MediaTypeNames.Application.Octet, filename);
+        }
+
+        public ActionResult ObtenerDatosCompresion()
+        {
+            if (String.IsNullOrEmpty(ArchivoOriginal) && String.IsNullOrEmpty(RutaArchivos))
+            {
+                long tamañoOriginal = ArchivoOriginal.Length;
+                long tamañoComprimido = new System.IO.FileInfo(RutaArchivos + "\\..\\Files\\archivoComprimido.lzw").Length;
+                long tamañoDescomprimido = new System.IO.FileInfo(RutaArchivos + "\\..\\Files\\archivoDescomprimido.txt").Length;
+
+
+                double razon = Convert.ToInt32(tamañoOriginal) / Convert.ToInt32(tamañoComprimido);
+                double factor = Convert.ToInt32(tamañoComprimido) / Convert.ToInt32(tamañoOriginal);
+                double porcentaje = Convert.ToInt32(tamañoDescomprimido) / Convert.ToInt32(tamañoComprimido);
+                //se envian los datos de la compresión a la vista
+                ViewBag.razon = razon;
+                ViewBag.factor = factor;
+                ViewBag.porcentaje = porcentaje;
+
+            }
+            else {
+                return JavaScript("<script>alert(\"Primero debe realizarse una compresion y descompresion\")</script>");
+            }
+            return View("DatosCompresion");
         }
     }
 }
