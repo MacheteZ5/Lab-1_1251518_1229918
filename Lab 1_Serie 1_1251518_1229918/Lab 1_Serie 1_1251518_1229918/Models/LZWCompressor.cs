@@ -41,7 +41,7 @@ namespace Lab_1_Serie_1_1251518_1229918.Models
         {
             //se utilizó una lista para que se escriba el numero de bytes correctos en el archivo y que no escriba más bytes debido por los espacios sobrantes del diccionario
             var ListaElementosDiccionario = new List<byte>();
-            using (var writeStream = new FileStream(RutaArchivos + "\\..\\FilesLZW\\archivoComprimido.lzw", FileMode.OpenOrCreate))
+            using (var writeStream = new FileStream(RutaArchivos + "\\..\\Files\\archivoComprimido.lzw", FileMode.OpenOrCreate))
             {
                 using (var writer = new BinaryWriter(writeStream))
                 {
@@ -73,12 +73,6 @@ namespace Lab_1_Serie_1_1251518_1229918.Models
             using (var stream = new FileStream(ArchivoLeido, FileMode.Open))
             {
                 using (var reader = new BinaryReader(stream))
-                if ((numero % 2) != 0)
-                {
-                    binario = "1"+ binario;
-
-                }
-                else
                 {
                     var byteBuffer = new byte[bufferLengt];
                     while (reader.BaseStream.Position != reader.BaseStream.Length)
@@ -142,7 +136,7 @@ namespace Lab_1_Serie_1_1251518_1229918.Models
             }
             return bytebuffer;
         }
-    
+
         public int CuantosBitsSeNecesitan(int numeroMaximo)
         {
             int bytesRequeridos = 0;
@@ -153,7 +147,6 @@ namespace Lab_1_Serie_1_1251518_1229918.Models
             return bytesRequeridos;
         }
         public string Descompress(Dictionary<string, int> diccionario, List<byte> ASCII, int CantidadBitsRequeridos, string RutaArchivo)
-
         {
             var textoDescompreso = string.Empty;
             var caracterPrevioDiccionario = string.Empty;
@@ -162,7 +155,7 @@ namespace Lab_1_Serie_1_1251518_1229918.Models
             var numeroBinario = string.Empty;
             LZWCompressor LZW = new LZWCompressor();
             var ASCIIABYTE = new List<int>();
-            foreach(byte bit in ASCII)
+            foreach (byte bit in ASCII)
             {
                 numeroBinario = Convert.ToString(bit, 2);
                 numeroBinario = numeroBinario.PadLeft(8, '0');
@@ -190,16 +183,16 @@ namespace Lab_1_Serie_1_1251518_1229918.Models
                                 caracterActualDiccionario += j;
                             }
                             caracterPrevioDiccionario = caracterActualDiccionario;
-                           
-                            }
+
+                        }
                         AuxiliarBitsRequeridos = string.Empty;
 
                     }
 
                 }
-                
+
             }
-           
+
             if (caracterActualDiccionario != string.Empty)
             {
                 textoDescompreso += caracterActualDiccionario;
@@ -227,14 +220,6 @@ namespace Lab_1_Serie_1_1251518_1229918.Models
             return numeroDecimal;
         }
 
-        public int CalcularBitsNecesarios(int numero)
-        {
-            int i = 0;
-            while (Math.Pow(2, i) < numero)
-            {
-                i++;
-            }
-            return i;
-        }
+
     }
 }

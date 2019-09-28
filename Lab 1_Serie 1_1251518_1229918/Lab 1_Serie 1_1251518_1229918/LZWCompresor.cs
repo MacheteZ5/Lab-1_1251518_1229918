@@ -14,9 +14,6 @@ namespace Lab_1_Serie_1_1251518_1229918
         byte[] CreaciónBufferEscritura(Dictionary<string, int> diccionario, List<string> ListaValores, List<byte> ListaBytesComprimidos, int valorCadena);
         int CuantosBitsSeNecesitan(int numero);
         string Descompress(Dictionary<string, int> diccionario, List<byte> ASCII, int CantidadBitsRequeridos, string RutaArchivos);
-        string ConvertToBinary(int numero);
-        int VerificarConversion(string binario);
-        int CalcularBitsNecesarios(int numero);
         int ConvertToDecimal(string binario);
     }
 }
