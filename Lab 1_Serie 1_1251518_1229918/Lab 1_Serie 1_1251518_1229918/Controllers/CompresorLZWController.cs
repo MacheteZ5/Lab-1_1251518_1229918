@@ -83,65 +83,84 @@ namespace Lab_1_Serie_1_1251518_1229918.Controllers
         [HttpPost]
         public ActionResult LecturaDesCompresión(HttpPostedFileBase postedFile)
         {
-            diccionario = new Dictionary<string, int>();
-            using (var stream = new FileStream(RutaArchivos + "\\..\\Files\\archivoComprimido.lzw", FileMode.Open))
+            string ArchivoLeido = string.Empty;
+            //le permite corroborar si la carpeta Files ya existe en la solución
+            bool Exists;
+            string Paths = Server.MapPath("~/Files/");
+            Exists = Directory.Exists(Paths);
+            if (!Exists)
             {
-                using (var reader = new BinaryReader(stream))
+                Directory.CreateDirectory(Paths);
+            }
+            if (postedFile != null)
+            {
+                string rutaDirectorioUsuario = Server.MapPath(string.Empty);
+                //se toma la ruta y nombre del archivo
+                ArchivoLeido = rutaDirectorioUsuario + Path.GetFileName(postedFile.FileName);
+                // se añade la extensión del archivo
+                RutaArchivos = rutaDirectorioUsuario;
+                postedFile.SaveAs(ArchivoLeido);
+                diccionario = new Dictionary<string, int>();
+                using (var stream = new FileStream(ArchivoLeido, FileMode.Open))
                 {
-                    var caracter = string.Empty;
-                    var ValorDiccionario = 0;
-                    byte[] byteBuffer = new byte[bufferLengt];
-                    var encontrado = false;
-                    var separador = false;
-                    int conteo = 0;
-                    while (reader.BaseStream.Position != reader.BaseStream.Length)
+                    using (var reader = new BinaryReader(stream))
                     {
-                        byteBuffer = reader.ReadBytes(10000000);
-                        if (conteo == 0)
+                        var caracter = string.Empty;
+                        var ValorDiccionario = 0;
+                        byte[] byteBuffer = new byte[bufferLengt];
+                        var encontrado = false;
+                        var separador = false;
+                        int conteo = 0;
+                        while (reader.BaseStream.Position != reader.BaseStream.Length)
                         {
-                            CantidadBitsRequeridos = byteBuffer[0];
-                            conteo++;
-                        }
-                        for (int i = 0; i < byteBuffer.Count(); i++)
-                        {
-                            if (!separador)
+                            byteBuffer = reader.ReadBytes(10000000);
+                            if (conteo == 0)
                             {
-                                if ((byteBuffer[i] == 45))
+                                CantidadBitsRequeridos = byteBuffer[0];
+                                conteo++;
+                            }
+                            for (int i = 0; i < byteBuffer.Count(); i++)
+                            {
+                                if (!separador)
                                 {
-                                    if ((byteBuffer[i + 1] == 45))
+                                    if ((byteBuffer[i] == 45))
                                     {
-                                        separador = true;
-                                        i = i + 2;
+                                        if ((byteBuffer[i + 1] == 45))
+                                        {
+                                            separador = true;
+                                            i = i + 2;
+                                        }
                                     }
-                                }
-                                if (!encontrado)
-                                {
-                                    if (byteBuffer[i] == 124)
+                                    if (!encontrado)
                                     {
-                                        caracter += (char)byteBuffer[i - 1];
-                                        ValorDiccionario = byteBuffer[i+1];
-                                        encontrado = true;
+                                        if (byteBuffer[i] == 124)
+                                        {
+                                            caracter += (char)byteBuffer[i - 1];
+                                            ValorDiccionario = byteBuffer[i + 1];
+                                            encontrado = true;
+                                        }
+                                    }
+                                    else
+                                    {
+                                        diccionario.Add(caracter, ValorDiccionario);
+                                        caracter = string.Empty;
+                                        encontrado = false;
                                     }
                                 }
                                 else
                                 {
-                                    diccionario.Add(caracter, ValorDiccionario);
-                                    caracter = string.Empty;
-                                    encontrado = false;
+                                    ASCII.Add(byteBuffer[i]);
                                 }
-                            }
-                            else
-                            {
-                                ASCII.Add(byteBuffer[i]);
                             }
                         }
                     }
                 }
+                for (int i = 0; i < 2; i++)
+                {
+                    ASCII.Remove(ASCII[0]);
+                }
             }
-            for (int i = 0; i < 2; i++)
-            {
-                ASCII.Remove(ASCII[0]);
-            }
+            
             return RedirectToAction("MétodoLZWDescompresion");
         }
 
@@ -149,7 +168,26 @@ namespace Lab_1_Serie_1_1251518_1229918.Controllers
         {
             LZWCompressor LZW = new LZWCompressor();
             string texto = LZW.Descompress(diccionario, ASCII, CantidadBitsRequeridos);
-            return View();
+            return View("Download");
+        }
+
+
+        public ActionResult Download()
+        {
+            string path = Server.MapPath("~/Files/");
+            DirectoryInfo dirInfo = new DirectoryInfo(path);
+            FileInfo[] files = dirInfo.GetFiles(".");
+            List<string> lista = new List<string>(files.Length);
+            foreach (var item in files)
+            {
+                lista.Add(item.Name);
+            }
+            return View(lista);
+        }
+        public ActionResult DownloadFile(string filename)
+        {
+            string fullPath = Path.Combine(Server.MapPath("~/Files/"), filename);
+            return File(fullPath, System.Net.Mime.MediaTypeNames.Application.Octet, filename);
         }
     }
 }

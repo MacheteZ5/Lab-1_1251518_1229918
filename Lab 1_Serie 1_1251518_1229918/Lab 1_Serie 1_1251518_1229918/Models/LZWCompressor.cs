@@ -68,8 +68,8 @@ namespace Lab_1_Serie_1_1251518_1229918.Models
 
         public Dictionary<string, int> CompararCaracteres(Dictionary<string, int> diccionario, ref List<string> ListaValores, int bufferLengt, string ArchivoLeido)
         {
-            var previo = string.Empty;
-            var actual = string.Empty;
+            var caracterPrevio = string.Empty;
+            var caracterActual = string.Empty;
             using (var stream = new FileStream(ArchivoLeido, FileMode.Open))
             {
                 using (var reader = new BinaryReader(stream))
@@ -80,24 +80,24 @@ namespace Lab_1_Serie_1_1251518_1229918.Models
                         byteBuffer = reader.ReadBytes(bufferLengt);
                         for (int i = 0; i < byteBuffer.Count(); i++)
                         {
-                            actual += (char)byteBuffer[i];
-                            if (!diccionario.ContainsKey(actual))
+                            caracterActual += (char)byteBuffer[i];
+                            if (!diccionario.ContainsKey(caracterActual))
                             {
-                                diccionario.Add(actual, diccionario.Count() + 1);
-                                ListaValores.Add(Convert.ToString(diccionario[previo], 2));
-                                actual = string.Empty;
-                                actual += (char)(byteBuffer[i]);
-                                previo = actual;
+                                diccionario.Add(caracterActual, diccionario.Count() + 1);
+                                ListaValores.Add(Convert.ToString(diccionario[caracterPrevio], 2));
+                                caracterActual = string.Empty;
+                                caracterActual += (char)(byteBuffer[i]);
+                                caracterPrevio = caracterActual;
                             }
                             else
                             {
-                                previo = actual;
+                                caracterPrevio = caracterActual;
                             }
                         }
                     }
-                    if (previo != string.Empty)
+                    if (caracterPrevio != string.Empty)
                     {
-                        ListaValores.Add(Convert.ToString(diccionario[previo], 2));
+                        ListaValores.Add(Convert.ToString(diccionario[caracterPrevio], 2));
                     }
                 }
             }
@@ -137,29 +137,29 @@ namespace Lab_1_Serie_1_1251518_1229918.Models
             return bytebuffer;
         }
     
-        public int CuantosBitsSeNecesitan(int numero)
+        public int CuantosBitsSeNecesitan(int numeroMaximo)
         {
-            int i = 0;
-            while (Math.Pow(2,i) < numero)
+            int bytesRequeridos = 0;
+            while (Math.Pow(2, bytesRequeridos) < numeroMaximo)
             {
-                i++;
+                bytesRequeridos++;
             }
-            return i;
+            return bytesRequeridos;
         }
         public string Descompress(Dictionary<string, int> diccionario, List<byte> ASCII, int CantidadBitsRequeridos)
         {
-            var texto = string.Empty;
-            var previo = string.Empty;
-            var actual = string.Empty;
+            var textoDescompreso = string.Empty;
+            var caracterPrevioDiccionario = string.Empty;
+            var caracterActualDiccionario = string.Empty;
             var AuxiliarBitsRequeridos = string.Empty;
-            var binario = string.Empty;
+            var numeroBinario = string.Empty;
             LZWCompressor LZW = new LZWCompressor();
             var ASCIIABYTE = new List<int>();
             foreach(byte bit in ASCII)
             {
-                binario = Convert.ToString(bit, 2);
-                binario = binario.PadLeft(8, '0');
-                foreach (char caracter in binario)
+                numeroBinario = Convert.ToString(bit, 2);
+                numeroBinario = numeroBinario.PadLeft(8, '0');
+                foreach (char caracter in numeroBinario)
                 {
                     AuxiliarBitsRequeridos += caracter;
                     if (AuxiliarBitsRequeridos.Length == CantidadBitsRequeridos)
@@ -174,37 +174,37 @@ namespace Lab_1_Serie_1_1251518_1229918.Models
                         }
                         foreach (char j in receptor)
                         {
-                            actual += j;
-                            if (!diccionario.ContainsKey(actual))
+                            caracterActualDiccionario += j;
+                            if (!diccionario.ContainsKey(caracterActualDiccionario))
                             {
-                                texto += previo;
-                                diccionario.Add(actual, diccionario.Count() + 1);
-                                actual = string.Empty;
-                                actual += j;
+                                textoDescompreso += caracterPrevioDiccionario;
+                                diccionario.Add(caracterActualDiccionario, diccionario.Count() + 1);
+                                caracterActualDiccionario = string.Empty;
+                                caracterActualDiccionario += j;
                             }
-                            previo = actual;
+                            caracterPrevioDiccionario = caracterActualDiccionario;
                         }
                         AuxiliarBitsRequeridos = string.Empty;
                     }
                 }
             }
-            if (actual != string.Empty)
+            if (caracterActualDiccionario != string.Empty)
             {
-                texto += actual;
+                textoDescompreso += caracterActualDiccionario;
             }
-            return texto;
+            return textoDescompreso;
         }
-        public int ConvertToDecimal(string binario)
+        public int ConvertToDecimal(string numeroBinario)
         {
-            int numero = 0;
-            for (int x = binario.Length - 1, y = 0; x >= 0; x--, y++)
+            int numeroDecimal = 0;
+            for (int x = numeroBinario.Length - 1, y = 0; x >= 0; x--, y++)
             {
-                if ((binario[x] == '0') || (binario[x] == '1'))
+                if ((numeroBinario[x] == '0') || (numeroBinario[x] == '1'))
                 {
-                    numero += (int)(int.Parse(binario[x].ToString()) * Math.Pow(2, y));
+                    numeroDecimal += (int)(int.Parse(numeroBinario[x].ToString()) * Math.Pow(2, y));
                 }
             }
-            return numero;
+            return numeroDecimal;
         }
 
         
