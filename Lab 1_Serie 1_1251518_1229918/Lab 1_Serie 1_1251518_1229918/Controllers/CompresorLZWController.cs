@@ -167,7 +167,7 @@ namespace Lab_1_Serie_1_1251518_1229918.Controllers
         public ActionResult MétodoLZWDescompresion()
         {
             LZWCompressor LZW = new LZWCompressor();
-            string texto = LZW.Descompress(diccionario, ASCII, CantidadBitsRequeridos);
+            string texto = LZW.Descompress(diccionario, ASCII, CantidadBitsRequeridos, RutaArchivos);
             return RedirectToAction("Download");
         }
 

@@ -13,7 +13,7 @@ namespace Lab_1_Serie_1_1251518_1229918
 
         byte[] CreaciónBufferEscritura(Dictionary<string, int> diccionario, List<string> ListaValores, List<byte> ListaBytesComprimidos, int valorCadena);
         int CuantosBitsSeNecesitan(int numero);
-        string Descompress(Dictionary<string, int> diccionario, List<byte> ASCII, int CantidadBitsRequeridos);
+        string Descompress(Dictionary<string, int> diccionario, List<byte> ASCII, int CantidadBitsRequeridos, string RutaArchivos);
         int ConvertToDecimal(string binario);
     }
 }

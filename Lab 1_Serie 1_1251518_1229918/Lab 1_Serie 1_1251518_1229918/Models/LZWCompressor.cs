@@ -146,14 +146,13 @@ namespace Lab_1_Serie_1_1251518_1229918.Models
             }
             return bytesRequeridos;
         }
-        public string Descompress(Dictionary<string, int> diccionario, List<byte> ASCII, int CantidadBitsRequeridos)
+        public string Descompress(Dictionary<string, int> diccionario, List<byte> ASCII, int CantidadBitsRequeridos, string RutaArchivo)
         {
             var textoDescompreso = string.Empty;
             var caracterPrevioDiccionario = string.Empty;
             var caracterActualDiccionario = string.Empty;
             var AuxiliarBitsRequeridos = string.Empty;
             var numeroBinario = string.Empty;
-            var byteBuffer = new byte[256];
             LZWCompressor LZW = new LZWCompressor();
             var ASCIIABYTE = new List<int>();
             foreach(byte bit in ASCII)
@@ -184,22 +183,28 @@ namespace Lab_1_Serie_1_1251518_1229918.Models
                                 caracterActualDiccionario += j;
                             }
                             caracterPrevioDiccionario = caracterActualDiccionario;
-                            if (textoDescompreso.Length > 256)
-                            {
-                                for (int i  = 0;  i< textoDescompreso.Length; i++)
-                                {
-
-                                }
-                            }
+                           
                             }
                         AuxiliarBitsRequeridos = string.Empty;
+
                     }
+
                 }
+                
             }
+           
             if (caracterActualDiccionario != string.Empty)
             {
                 textoDescompreso += caracterActualDiccionario;
             }
+            using (var writeStream = new FileStream(RutaArchivo + "\\..\\Files\\archivoDescomprimido.txt", FileMode.OpenOrCreate))
+            {
+                using (var writer = new BinaryWriter(writeStream))
+                {
+                    writer.Write(System.Text.Encoding.Unicode.GetBytes(textoDescompreso));
+                }
+            }
+            textoDescompreso = string.Empty;
             return textoDescompreso;
         }
         public int ConvertToDecimal(string numeroBinario)
