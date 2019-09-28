@@ -1,4 +1,4 @@
-﻿using Lab_1_Serie_1_1251518_1229918.Models;
+using Lab_1_Serie_1_1251518_1229918.Models;
 using System;
 using System.Collections.Generic;
 using System.IO;
@@ -73,6 +73,92 @@ namespace Lab_1_Serie_1_1251518_1229918.Controllers
                 }
             }
             return RedirectToAction("Download");
+                    var byteBuffer = new byte[bufferLengt];
+                    while (reader.BaseStream.Position != reader.BaseStream.Length)
+                    {
+                        byteBuffer = reader.ReadBytes(bufferLengt);
+                        foreach (byte bit in byteBuffer)
+                        {
+                            //añadir al diccionario
+                            actual += (char)bit;
+                            if (!diccionario.ContainsKey(actual))
+                            {
+                                ContadorElementosDiccionario++;
+                                diccionario.Add(actual, ContadorElementosDiccionario);
+                                actual = string.Empty;
+                                actual += (char)bit;
+                                ListaValores.Add(diccionario[previo]);
+                                previo = string.Empty;
+                                previo += (char)bit;
+                            }
+                            else
+                            {
+                                previo += (char)bit;
+                            }
+                        }
+                        if (previo != string.Empty)
+                        {
+                            ListaValores.Add(diccionario[previo]);
+                        }
+                    }
+                    //convertirlos a bytes
+                    var binario = string.Empty;
+                    var valorCadena = LZW.CalcularBitsNecesarios(diccionario.Count());
+
+                    foreach (int aux in ListaValores)
+                    {
+                        byte DECABYTE = new byte();
+                        binario = LZW.ConvertToBinary(aux);
+                        binario = binario.PadLeft(valorCadena, '0');
+                        if (aux < 256)
+                        {
+                            decimal x = Convert.ToInt32(binario, 2);
+                            DECABYTE = Convert.ToByte(x);
+                            ListaBytesComprimidos.Add(DECABYTE);
+                            binario = string.Empty;
+                        }
+                        else
+                        {
+                            string auxiliarBinario = string.Empty;
+                            foreach(char caracter in binario)
+                            {
+                                auxiliarBinario += caracter;
+                                if (auxiliarBinario.Count() == 8)
+                                {
+                                    decimal x = Convert.ToInt32(auxiliarBinario, 2);
+                                    DECABYTE = Convert.ToByte(x);
+                                    ListaBytesComprimidos.Add(DECABYTE);
+                                    auxiliarBinario = string.Empty;
+                                }
+                            }
+                            if (auxiliarBinario != string.Empty)
+                            {
+                                auxiliarBinario = auxiliarBinario.PadRight(8, '0');
+                                decimal x = Convert.ToInt32(auxiliarBinario, 2);
+                                DECABYTE = Convert.ToByte(x);
+                                ListaBytesComprimidos.Add(DECABYTE);
+                            }
+                            binario = string.Empty;
+                        }
+                    }
+                    byte[] bytebuffer = new byte[ListaBytesComprimidos.Count()];
+                    for (int i = 0; i < ListaBytesComprimidos.Count(); i++)
+                    {
+                        bytebuffer[i] = ListaBytesComprimidos[i];
+                    }
+                    using (var writeStream = new FileStream(RutaArchivos + "\\..\\FilesLZW\\archivoComprimido.lzw", FileMode.Open))
+                    {
+                        using (var writer = new BinaryWriter(writeStream))
+                        {
+                            writer.Seek(0,SeekOrigin.Begin);
+                            writer.Write(Convert.ToByte(valorCadena));
+                            writer.Seek(0, SeekOrigin.End);
+                            writer.Write(bytebuffer);
+                        }
+                    }
+                }
+            }
+            return View("download");
         }
         public ActionResult LecturaDescompresión()
         {
@@ -89,6 +175,8 @@ namespace Lab_1_Serie_1_1251518_1229918.Controllers
             string Paths = Server.MapPath("~/Files/");
             Exists = Directory.Exists(Paths);
             if (!Exists)
+            diccionario = new Dictionary<string, int>();
+            using (var stream = new FileStream(RutaArchivos + "\\..\\FilesLZW\\archivoComprimido.lzw", FileMode.Open))
             {
                 Directory.CreateDirectory(Paths);
             }
@@ -187,6 +275,24 @@ namespace Lab_1_Serie_1_1251518_1229918.Controllers
         public ActionResult DownloadFile(string filename)
         {
             string fullPath = Path.Combine(Server.MapPath("~/Files/"), filename);
+            return File(fullPath, System.Net.Mime.MediaTypeNames.Application.Octet, filename);
+        }
+
+        public ActionResult Download()
+        {
+            string path = Server.MapPath("~/FilesLZW/");
+            DirectoryInfo dirInfo = new DirectoryInfo(path);
+            FileInfo[] files = dirInfo.GetFiles(".");
+            List<string> lista = new List<string>(files.Length);
+            foreach (var item in files)
+            {
+                lista.Add(item.Name);
+            }
+            return View(lista);
+        }
+        public ActionResult DownloadFile(string filename)
+        {
+            string fullPath = Path.Combine(Server.MapPath("~/FilesLZW/"), filename);
             return File(fullPath, System.Net.Mime.MediaTypeNames.Application.Octet, filename);
         }
     }
