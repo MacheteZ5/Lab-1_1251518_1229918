@@ -1,12 +1,13 @@
-﻿
 @{
+    ViewBag.Title = "Download";
     ViewBag.Title = "Descargar Archivo";
 }
 <h1>MIS COMPRESIONES</h1>
 <h2>El archivo se proceso correctamente</h2>
 
 <body>
-    <p>Por favor, presione el nombre del archivo para inicial la descarga.</p>
+    <p>Por favor, presione el nombre del archivo para iniciar la descarga.</p>
+
     <div>
         @foreach (var item in ViewData.Model)
         {
@@ -15,7 +16,7 @@
         }
     </div>
 
-    <form action="~/CompresorLZW/index">
+    <form action="~/Home">
         <input id="volver" type="submit" value="Volver A Página Principal" />
     </form>
 </body>
