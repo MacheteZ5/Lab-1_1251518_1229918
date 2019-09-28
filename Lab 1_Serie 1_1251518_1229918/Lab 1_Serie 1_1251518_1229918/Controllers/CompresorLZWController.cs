@@ -72,7 +72,7 @@ namespace Lab_1_Serie_1_1251518_1229918.Controllers
                     writer.Write(bytebuffer);
                 }
             }
-            return View();
+            return RedirectToAction("Download");
         }
         public ActionResult LecturaDescompresión()
         {
@@ -168,7 +168,7 @@ namespace Lab_1_Serie_1_1251518_1229918.Controllers
         {
             LZWCompressor LZW = new LZWCompressor();
             string texto = LZW.Descompress(diccionario, ASCII, CantidadBitsRequeridos);
-            return View("Download");
+            return RedirectToAction("Download");
         }
 
 

@@ -153,6 +153,7 @@ namespace Lab_1_Serie_1_1251518_1229918.Models
             var caracterActualDiccionario = string.Empty;
             var AuxiliarBitsRequeridos = string.Empty;
             var numeroBinario = string.Empty;
+            var byteBuffer = new byte[256];
             LZWCompressor LZW = new LZWCompressor();
             var ASCIIABYTE = new List<int>();
             foreach(byte bit in ASCII)
@@ -183,7 +184,14 @@ namespace Lab_1_Serie_1_1251518_1229918.Models
                                 caracterActualDiccionario += j;
                             }
                             caracterPrevioDiccionario = caracterActualDiccionario;
-                        }
+                            if (textoDescompreso.Length > 256)
+                            {
+                                for (int i  = 0;  i< textoDescompreso.Length; i++)
+                                {
+
+                                }
+                            }
+                            }
                         AuxiliarBitsRequeridos = string.Empty;
                     }
                 }
