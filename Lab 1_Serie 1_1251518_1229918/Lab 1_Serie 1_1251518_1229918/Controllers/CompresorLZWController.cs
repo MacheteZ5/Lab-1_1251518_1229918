@@ -194,25 +194,23 @@ namespace Lab_1_Serie_1_1251518_1229918.Controllers
 
         public ActionResult ObtenerDatosCompresion()
         {
-            if (String.IsNullOrEmpty(ArchivoOriginal) && String.IsNullOrEmpty(RutaArchivos))
-            {
-                long tamañoOriginal = ArchivoOriginal.Length;
-                long tamañoComprimido = new System.IO.FileInfo(RutaArchivos + "\\..\\Files\\archivoComprimido.lzw").Length;
-                long tamañoDescomprimido = new System.IO.FileInfo(RutaArchivos + "\\..\\Files\\archivoDescomprimido.txt").Length;
-
-
-                double razon = Convert.ToInt32(tamañoOriginal) / Convert.ToInt32(tamañoComprimido);
-                double factor = Convert.ToInt32(tamañoComprimido) / Convert.ToInt32(tamañoOriginal);
-                double porcentaje = Convert.ToInt32(tamañoDescomprimido) / Convert.ToInt32(tamañoComprimido);
-                //se envian los datos de la compresión a la vista
-                ViewBag.razon = razon;
-                ViewBag.factor = factor;
-                ViewBag.porcentaje = porcentaje;
-
-            }
-            else {
-                return JavaScript("<script>alert(\"Primero debe realizarse una compresion y descompresion\")</script>");
-            }
+            //las variables se inicializan en 0 por si el usuario presiona el boton y no hay datos cargados
+            long tamañoOriginal = 0;
+            tamañoOriginal = ArchivoOriginal.Length;
+            long tamañoComprimido = 0;
+            tamañoComprimido = new System.IO.FileInfo(RutaArchivos + "\\..\\Files\\archivoComprimido.lzw").Length;
+            long tamañoDescomprimido = 0;
+            tamañoDescomprimido = new System.IO.FileInfo(RutaArchivos + "\\..\\Files\\archivoDescomprimido.txt").Length;
+            double razon = 0;
+            razon = Convert.ToInt32(tamañoOriginal) / Convert.ToInt32(tamañoComprimido);
+            double factor = 0; 
+            factor = Convert.ToInt32(tamañoComprimido) / Convert.ToInt32(tamañoOriginal);
+            double porcentaje = 0;
+            porcentaje = Convert.ToInt32(tamañoDescomprimido) / Convert.ToInt32(tamañoComprimido);
+            //se envian los datos de la compresión a la vista
+            ViewBag.razon = razon;
+            ViewBag.factor = factor;
+            ViewBag.porcentaje = porcentaje;
             return View("DatosCompresion");
         }
     }
